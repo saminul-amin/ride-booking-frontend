@@ -133,9 +133,11 @@ const Navbar = () => {
                     Login
                   </button>
                 </Link>
-                <button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 cursor-pointer hover:shadow-lg hover:shadow-green-500/25">
-                  Get Started
-                </button>
+                <Link to="/register">
+                  <button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 cursor-pointer hover:shadow-lg hover:shadow-green-500/25">
+                    Get Started
+                  </button>
+                </Link>
               </div>
             )}
           </div>
