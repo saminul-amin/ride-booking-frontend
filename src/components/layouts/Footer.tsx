@@ -213,57 +213,6 @@ const Footer = () => {
             </ul>
           </div>
         </div>
-
-        {/* App Download Section */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="flex flex-col lg:flex-row items-center justify-between">
-            <div className="mb-6 lg:mb-0">
-              <h4 className="text-lg font-semibold text-white mb-2">
-                Download Our App
-              </h4>
-              <p className="text-gray-300 text-sm">
-                Get the best ride experience on your mobile device
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* App Store Button */}
-              <a
-                href="#"
-                className="bg-gray-800 hover:bg-gray-700 px-6 py-3 rounded-lg transition-colors duration-200 flex items-center"
-              >
-                <div className="mr-3">
-                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                    <span className="text-black font-bold text-xs">A</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-300">Download on the</div>
-                  <div className="text-sm font-semibold text-white">
-                    App Store
-                  </div>
-                </div>
-              </a>
-
-              {/* Google Play Button */}
-              <a
-                href="#"
-                className="bg-gray-800 hover:bg-gray-700 px-6 py-3 rounded-lg transition-colors duration-200 flex items-center"
-              >
-                <div className="mr-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-green-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-xs">P</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-300">Get it on</div>
-                  <div className="text-sm font-semibold text-white">
-                    Google Play
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Bottom Bar */}
