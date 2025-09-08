@@ -25,14 +25,15 @@ export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { data: userInfo, isLoading } = useUserInfoQuery();
+  const { data: userInfo, isLoading } = useUserInfoQuery(undefined);
   const [logout] = useLogoutMutation();
 
-  const userRole = (userInfo?.role || "RIDER") as IRole;
+  // const userRole = (userInfo?.role || "DRIVER") as IRole;
+  const userRole = "DRIVER";
 
   const handleLogout = async () => {
     try {
-      await logout().unwrap();
+      await logout(undefined).unwrap();
       toast("Successfully logged out!");
       navigate("/");
     } catch (error) {
@@ -46,6 +47,7 @@ export default function DashboardLayout() {
   };
 
   const getCurrentPageTitle = () => {
+    console.log(userRole);
     const sidebarItems = getSidebarItems(userRole);
     const currentItem = sidebarItems
       .flatMap(section => section.items)

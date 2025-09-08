@@ -4,11 +4,11 @@ import { riderSidebarItems } from "@/routes/RiderSidebarItems";
 
 export const getSidebarItems = (userRole: string) => {
   switch (userRole) {
-    case "admin":
+    case "ADMIN":
       return [...adminSidebarItems];
-    case "rider":
+    case "RIDER":
       return [...riderSidebarItems];
-    case "driver":
+    case "DRIVER":
       return [...driverSidebarItems];
     default:
       return [];

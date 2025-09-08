@@ -1,28 +1,26 @@
 import { useState } from "react";
 import { Menu, X, User, ChevronDown } from "lucide-react";
-import type { IRole } from "@/types";
 import { ModeToggle } from "./ModeToggler";
 import { Link, useNavigate } from "react-router";
 import {
+  authApi,
   useLogoutMutation,
   useUserInfoQuery,
 } from "@/redux/features/auth/auth.api";
 import { toast } from "sonner";
+import { useAppDispatch } from "@/redux/hook";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  // // Mock user state - replace with your actual auth state
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [userRole, setUserRole] = useState<IRole>("RIDER"); // 'rider', 'driver', 'admin'
-
-  const { data: userInfo, isLoading, isError } = useUserInfoQuery();
+  const { data: userInfo, isLoading, isError } = useUserInfoQuery(undefined);
   const [logout] = useLogoutMutation();
 
   const isLoggedIn = !!userInfo && !isError;
-  const userRole = userInfo?.role || "RIDER";
+  const userRole = userInfo?.role || "DRIVER";
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
@@ -39,7 +37,7 @@ const Navbar = () => {
   const roleBasedNavItems = {
     RIDER: [
       { label: "Dashboard", href: "/rider/dashboard" },
-      { label: "Book Ride", href: "/rider/book" },
+      { label: "Book Ride", href: "/rider/book-ride" },
       { label: "My Rides", href: "/rider/rides" },
       { label: "Profile", href: "/rider/profile" },
     ],
@@ -61,9 +59,11 @@ const Navbar = () => {
     ? roleBasedNavItems[userRole]
     : publicNavItems;
 
+  console.log(isLoggedIn, userRole)
   const handleLogout = async () => {
     try {
-      await logout().unwrap();
+      await logout(undefined);
+      dispatch(authApi.util.resetApiState());
       toast("Successfully logged out!");
       navigate("/");
     } catch (error) {
@@ -151,7 +151,6 @@ const Navbar = () => {
                         Account Settings
                       </a>
                       <hr className="my-1" />
-
                       <button
                         onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm transition-all duration-200 text-destructive hover:bg-accent cursor-pointer hover:pl-6 hover:text-red-600"
