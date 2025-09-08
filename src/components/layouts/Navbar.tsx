@@ -2,15 +2,27 @@ import { useState } from "react";
 import { Menu, X, User, ChevronDown } from "lucide-react";
 import type { IRole } from "@/types";
 import { ModeToggle } from "./ModeToggler";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import {
+  useLogoutMutation,
+  useUserInfoQuery,
+} from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const navigate = useNavigate();
 
-  // Mock user state - replace with your actual auth state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<IRole>("RIDER"); // 'rider', 'driver', 'admin'
+  // // Mock user state - replace with your actual auth state
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [userRole, setUserRole] = useState<IRole>("RIDER"); // 'rider', 'driver', 'admin'
+
+  const { data: userInfo, isLoading, isError } = useUserInfoQuery();
+  const [logout] = useLogoutMutation();
+
+  const isLoggedIn = !!userInfo && !isError;
+  const userRole = userInfo?.role || "RIDER";
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
@@ -48,6 +60,32 @@ const Navbar = () => {
   const currentNavItems = isLoggedIn
     ? roleBasedNavItems[userRole]
     : publicNavItems;
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      toast("Successfully logged out!");
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  // Add this before your return statement
+  if (isLoading) {
+    return (
+      <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            {/* Just show logo while loading */}
+            <span className="text-xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">
+              RideBook
+            </span>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -113,8 +151,9 @@ const Navbar = () => {
                         Account Settings
                       </a>
                       <hr className="my-1" />
+
                       <button
-                        onClick={() => setIsLoggedIn(false)}
+                        onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm transition-all duration-200 text-destructive hover:bg-accent cursor-pointer hover:pl-6 hover:text-red-600"
                       >
                         Sign Out
@@ -126,10 +165,7 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center space-x-3">
                 <Link to="/login">
-                  <button
-                    onClick={() => setIsLoggedIn(true)}
-                    className="px-4 py-2 text-sm font-medium transition-all duration-200 hover:text-primary hover:scale-105 cursor-pointer rounded-lg hover:bg-accent/50 hover:shadow-md"
-                  >
+                  <button className="px-4 py-2 text-sm font-medium transition-all duration-200 hover:text-primary hover:scale-105 cursor-pointer rounded-lg hover:bg-accent/50 hover:shadow-md">
                     Login
                   </button>
                 </Link>
@@ -179,15 +215,16 @@ const Navbar = () => {
             {/* Mobile Auth Buttons */}
             {!isLoggedIn && (
               <div className="pt-4 space-y-2">
-                <button
-                  onClick={() => setIsLoggedIn(true)}
-                  className="w-full text-left px-3 py-3 rounded-lg font-medium transition-all duration-200 hover:bg-accent hover:text-primary cursor-pointer hover:pl-6 hover:shadow-md"
-                >
-                  Sign In
-                </button>
-                <button className="w-full text-left px-3 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:from-green-600 hover:to-green-700 cursor-pointer hover:pl-6 hover:shadow-green-500/25">
-                  Get Started
-                </button>
+                <Link to="/login">
+                  <button className="w-full text-left px-3 py-3 rounded-lg font-medium transition-all duration-200 hover:bg-accent hover:text-primary cursor-pointer hover:pl-6 hover:shadow-md">
+                    Sign In
+                  </button>
+                </Link>
+                <Link to="/register">
+                  <button className="w-full text-left px-3 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:from-green-600 hover:to-green-700 cursor-pointer hover:pl-6 hover:shadow-green-500/25">
+                    Get Started
+                  </button>
+                </Link>
               </div>
             )}
           </div>

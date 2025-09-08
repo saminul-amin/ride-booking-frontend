@@ -1,6 +1,6 @@
-import Features from "@/components/modules/Features";
-import Hero from "@/components/modules/Hero";
-import HowItWorks from "@/components/modules/HowItWorks";
+import Features from "@/components/modules/homepage/Features";
+import Hero from "@/components/modules/homepage/Hero";
+import HowItWorks from "@/components/modules/homepage/HowItWorks";
 
 export default function Homepage() {
   return (

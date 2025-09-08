@@ -30,24 +30,82 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
+import { useRegisterMutation } from "@/redux/features/auth/auth.api";
 
-interface RegisterFormData {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-  role: "rider" | "driver";
-  vehicleModel?: string;
-  vehiclePlate?: string;
-  termsAccepted: boolean;
-}
+const registerSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, { message: "Name must be at least 2 characters long" })
+      .max(50, { message: "Name is too long" }),
+    email: z
+      .string()
+      .min(1, { message: "Email is required" })
+      .email({ message: "Please enter a valid email address" }),
+    phone: z
+      .string()
+      .min(1, { message: "Phone number is required" })
+      .regex(/^[+]?[\d\s\-\(\)]{10,}$/, {
+        message: "Please enter a valid phone number",
+      }),
+    password: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters long" })
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      }),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Please confirm your password" }),
+    role: z.enum(["rider", "driver"]),
+    vehicleModel: z.string().optional(),
+    vehiclePlate: z.string().optional(),
+    termsAccepted: z.boolean(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+  .refine((data) => data.termsAccepted === true, {
+    message: "You must accept the terms and conditions to continue",
+    path: ["termsAccepted"],
+  })
+  .refine(
+    (data) => {
+      if (data.role === "driver") {
+        return data.vehicleModel && data.vehicleModel.length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Vehicle model is required for drivers",
+      path: ["vehicleModel"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.role === "driver") {
+        return data.vehiclePlate && /^[A-Z0-9\-]+$/i.test(data.vehiclePlate);
+      }
+      return true;
+    },
+    {
+      message: "License plate is required for drivers",
+      path: ["vehiclePlate"],
+    }
+  );
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [registerUser] = useRegisterMutation();
   const navigate = useNavigate();
 
   const {
@@ -57,6 +115,7 @@ const Register = () => {
     setValue,
     formState: { errors, isValid },
   } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
     mode: "onChange",
     defaultValues: {
       name: "",
@@ -71,21 +130,28 @@ const Register = () => {
     },
   });
 
-  const watchedFields = watch();
   const selectedRole = watch("role");
   const termsAccepted = watch("termsAccepted");
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
 
+    const userInfo = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      phone: data.phone,
+      role: data.role,
+      ...(data.role === "driver" && {
+        vehicleModel: data.vehicleModel,
+        vehiclePlate: data.vehiclePlate,
+      }),
+    };
+
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Mock success - replace with actual API integration
-      console.log("Registration successful:", data);
+      await registerUser(userInfo).unwrap();
+      // console.log("Registration successful:", data);
       toast.success("Account created successfully! Please login to continue.");
-
       navigate("/login");
     } catch (error) {
       toast.error("Registration failed. Please try again.");
@@ -116,370 +182,323 @@ const Register = () => {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-4">
-            {/* Name Field */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-medium">
-                Full Name
-              </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  {...register("name", {
-                    required: "Full name is required",
-                    minLength: {
-                      value: 2,
-                      message: "Name must be at least 2 characters long",
-                    },
-                  })}
-                  className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
-                    errors.name
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                />
-              </div>
-              {errors.name && (
-                <p className="text-sm text-red-600 mt-1">
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
-
-            {/* Email Field */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email Address
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /\S+@\S+\.\S+/,
-                      message: "Please enter a valid email address",
-                    },
-                  })}
-                  className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
-                    errors.email
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                />
-              </div>
-              {errors.email && (
-                <p className="text-sm text-red-600 mt-1">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            {/* Phone Field */}
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-sm font-medium">
-                Phone Number
-              </Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  {...register("phone", {
-                    required: "Phone number is required",
-                    pattern: {
-                      value: /^[+]?[\d\s\-\(\)]{10,}$/,
-                      message: "Please enter a valid phone number",
-                    },
-                  })}
-                  className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
-                    errors.phone
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                />
-              </div>
-              {errors.phone && (
-                <p className="text-sm text-red-600 mt-1">
-                  {errors.phone.message}
-                </p>
-              )}
-            </div>
-
-            {/* Role Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="role" className="text-sm font-medium">
-                Account Type
-              </Label>
-              <Select
-                value={selectedRole}
-                onValueChange={(value) =>
-                  setValue("role", value as "rider" | "driver")
-                }
-              >
-                <SelectTrigger className="focus:ring-green-500 focus:border-green-500">
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="rider">
-                    <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span>Rider - Book rides</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="driver">
-                    <div className="flex items-center space-x-2">
-                      <Car className="h-4 w-4" />
-                      <span>Driver - Provide rides</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Driver-specific fields */}
-            {selectedRole === "driver" && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="vehicleModel" className="text-sm font-medium">
-                    Vehicle Model
-                  </Label>
-                  <div className="relative">
-                    <Car className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="vehicleModel"
-                      type="text"
-                      placeholder="e.g., Toyota Corolla 2020"
-                      {...register("vehicleModel", {
-                        required:
-                          selectedRole === "driver"
-                            ? "Vehicle model is required for drivers"
-                            : false,
-                      })}
-                      className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
-                        errors.vehicleModel
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                          : ""
-                      }`}
-                    />
-                  </div>
-                  {errors.vehicleModel && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {errors.vehicleModel.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="vehiclePlate" className="text-sm font-medium">
-                    License Plate Number
-                  </Label>
-                  <div className="relative">
-                    <Car className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="vehiclePlate"
-                      type="text"
-                      placeholder="e.g., ABC-1234"
-                      {...register("vehiclePlate", {
-                        required:
-                          selectedRole === "driver"
-                            ? "License plate is required for drivers"
-                            : false,
-                        pattern: {
-                          value: /^[A-Z0-9\-]+$/i,
-                          message: "Please enter a valid license plate number",
-                        },
-                      })}
-                      className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
-                        errors.vehiclePlate
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                          : ""
-                      }`}
-                    />
-                  </div>
-                  {errors.vehiclePlate && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {errors.vehiclePlate.message}
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* Password Field */}
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
-                Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a strong password"
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 8,
-                      message: "Password must be at least 8 characters long",
-                    },
-                    pattern: {
-                      value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                      message:
-                        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-                    },
-                  })}
-                  className={`pl-10 pr-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
-                    errors.password
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-sm text-red-600 mt-1">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            {/* Confirm Password Field */}
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirm Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm your password"
-                  {...register("confirmPassword", {
-                    required: "Please confirm your password",
-                    validate: (value) =>
-                      value === watchedFields.password ||
-                      "Passwords do not match",
-                  })}
-                  className={`pl-10 pr-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
-                    errors.confirmPassword
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : ""
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-sm text-red-600 mt-1">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-
-            {/* Terms and Conditions */}
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="terms"
-                checked={termsAccepted}
-                onCheckedChange={(checked) =>
-                  setValue("termsAccepted", checked as boolean)
-                }
-                className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 mt-1"
-              />
-              <div className="grid gap-1.5 leading-none">
-                <Label
-                  htmlFor="terms"
-                  className="text-sm font-medium leading-relaxed cursor-pointer"
-                >
-                  I agree to the{" "}
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="px-0 h-auto font-medium text-green-600 hover:text-green-700 hover:underline cursor-pointer"
-                  >
-                    Terms of Service
-                  </Button>{" "}
-                  and{" "}
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="px-0 h-auto font-medium text-green-600 hover:text-green-700 hover:underline cursor-pointer"
-                  >
-                    Privacy Policy
-                  </Button>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4">
+              {/* Name Field */}
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium">
+                  Full Name
                 </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    {...register("name")}
+                    className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
+                      errors.name
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : ""
+                    }`}
+                  />
+                </div>
+                {errors.name && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
-            </div>
-            {!termsAccepted && (
-              <p className="text-sm text-red-600 mt-1">
-                You must accept the terms and conditions to continue
-              </p>
-            )}
-          </CardContent>
 
-          <CardFooter className="flex flex-col space-y-4">
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              onClick={handleSubmit(onSubmit)}
-              disabled={isLoading || !isValid || !termsAccepted}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg hover:shadow-green-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
-            >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Creating Account...</span>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email Address
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    {...register("email")}
+                    className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
+                      errors.email
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : ""
+                    }`}
+                  />
                 </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <span>Create Account</span>
-                  <ArrowRight className="h-4 w-4" />
+                {errors.email && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Phone Field */}
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium">
+                  Phone Number
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    {...register("phone")}
+                    className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
+                      errors.phone
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : ""
+                    }`}
+                  />
                 </div>
+                {errors.phone && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {errors.phone.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="role" className="text-sm font-medium">
+                  Account Type
+                </Label>
+                <Select
+                  value={selectedRole}
+                  onValueChange={(value) =>
+                    setValue("role", value as "rider" | "driver", { shouldValidate: true })
+                  }
+                >
+                  <SelectTrigger className="focus:ring-green-500 focus:border-green-500">
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rider">
+                      <div className="flex items-center space-x-2">
+                        <User className="h-4 w-4" />
+                        <span>Rider - Book rides</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="driver">
+                      <div className="flex items-center space-x-2">
+                        <Car className="h-4 w-4" />
+                        <span>Driver - Provide rides</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Driver-specific fields */}
+              {selectedRole === "driver" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="vehicleModel" className="text-sm font-medium">
+                      Vehicle Model
+                    </Label>
+                    <div className="relative">
+                      <Car className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="vehicleModel"
+                        type="text"
+                        placeholder="e.g., Toyota Corolla 2020"
+                        {...register("vehicleModel")}
+                        className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
+                          errors.vehicleModel
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : ""
+                        }`}
+                      />
+                    </div>
+                    {errors.vehicleModel && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {errors.vehicleModel.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="vehiclePlate" className="text-sm font-medium">
+                      License Plate Number
+                    </Label>
+                    <div className="relative">
+                      <Car className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="vehiclePlate"
+                        type="text"
+                        placeholder="e.g., ABC-1234"
+                        {...register("vehiclePlate")}
+                        className={`pl-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
+                          errors.vehiclePlate
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : ""
+                        }`}
+                      />
+                    </div>
+                    {errors.vehiclePlate && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {errors.vehiclePlate.message}
+                      </p>
+                    )}
+                  </div>
+                </>
               )}
-            </Button>
 
-            {/* Login Link */}
-            <div className="text-center text-sm">
-              <span className="text-muted-foreground">
-                Already have an account?
-              </span>{" "}
+              {/* Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a strong password"
+                    {...register("password")}
+                    className={`pl-10 pr-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
+                      errors.password
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : ""
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirm Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    {...register("confirmPassword")}
+                    className={`pl-10 pr-10 transition-all duration-200 focus:ring-green-500 focus:border-green-500 ${
+                      errors.confirmPassword
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : ""
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Terms and Conditions */}
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="terms"
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) =>
+                    setValue("termsAccepted", checked as boolean, { shouldValidate: true })
+                  }
+                  className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 mt-1"
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-relaxed cursor-pointer"
+                  >
+                    I agree to the{" "}
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="px-0 h-auto font-medium text-green-600 hover:text-green-700 hover:underline cursor-pointer"
+                    >
+                      Terms of Service
+                    </Button>{" "}
+                    and{" "}
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="px-0 h-auto font-medium text-green-600 hover:text-green-700 hover:underline cursor-pointer"
+                    >
+                      Privacy Policy
+                    </Button>
+                  </Label>
+                </div>
+              </div>
+              {errors.termsAccepted && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.termsAccepted.message}
+                </p>
+              )}
+            </CardContent>
+
+            <CardFooter className="flex flex-col space-y-4">
+              {/* Submit Button */}
               <Button
-                type="button"
-                variant="link"
-                className="px-0 font-medium text-green-600 hover:text-green-700 hover:underline cursor-pointer"
-                onClick={() => navigate("/login")}
+                type="submit"
+                disabled={isLoading || !isValid}
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg hover:shadow-green-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
               >
-                Login
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Creating Account...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <span>Create Account</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                )}
               </Button>
-            </div>
-          </CardFooter>
+
+              {/* Login Link */}
+              <div className="text-center text-sm">
+                <span className="text-muted-foreground">
+                  Already have an account?
+                </span>{" "}
+                <Button
+                  type="button"
+                  variant="link"
+                  className="px-0 font-medium text-green-600 hover:text-green-700 hover:underline cursor-pointer"
+                  onClick={() => navigate("/login")}
+                >
+                  Login
+                </Button>
+              </div>
+            </CardFooter>
+          </form>
         </Card>
       </div>
     </div>

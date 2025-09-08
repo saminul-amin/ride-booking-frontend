@@ -1,8 +1,11 @@
 import App from "@/App";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 import Homepage from "@/pages/Homepage";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import { generateRoutes } from "@/utils/generateRoutes";
 import { createBrowserRouter } from "react-router";
+import { riderSidebarItems } from "./RiderSidebarItems";
 
 export const router = createBrowserRouter([
   {
@@ -23,5 +26,10 @@ export const router = createBrowserRouter([
   {
     Component: Register,
     path: "/register",
+  },
+  {
+    Component: DashboardLayout,
+    path: "/rider",
+    children: [...generateRoutes(riderSidebarItems)],
   },
 ]);
