@@ -157,7 +157,8 @@ const AvailabilityControl = ({
   };
 
   return (
-    <div className="bg-card rounded-lg border p-6 space-y-6">
+    <div className="bg-card rounded-lg border p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center space-x-2">
@@ -289,7 +290,7 @@ const AvailabilityControl = ({
             </div>
           </div>
         </div>
-      )}
+      )}</div>
     </div>
   );
 };
