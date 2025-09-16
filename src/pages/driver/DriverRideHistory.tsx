@@ -6,7 +6,6 @@ import {
   Star,
   Calendar,
   Filter,
-  ArrowLeft,
   Route,
   User,
 } from "lucide-react";

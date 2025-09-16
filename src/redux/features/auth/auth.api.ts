@@ -15,6 +15,15 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
       }),
       invalidatesTags: ["USER"],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          // Clear all user-related cache
+          dispatch(authApi.util.resetApiState());
+        } catch (error) {
+          console.error("Logout error:", error);
+        }
+      },
     }),
     register: builder.mutation({
       query: (userInfo) => ({
@@ -29,6 +38,7 @@ export const authApi = baseApi.injectEndpoints({
         method: "GET",
       }),
       providesTags: ["USER"],
+      keepUnusedDataFor: 0,
     }),
   }),
 });

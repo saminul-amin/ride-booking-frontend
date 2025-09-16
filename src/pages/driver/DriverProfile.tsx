@@ -2,7 +2,6 @@ import {
   User,
   Mail,
   Phone,
-  Car,
   Shield,
   Calendar,
   DollarSign,
@@ -34,8 +33,6 @@ interface IUser {
 
 const DriverProfile = () => {
   const { data: userInfo, isLoading } = useUserInfoQuery(undefined);
-
-  console.log("Driver Profile - User Info:", userInfo);
 
   const user = userInfo?.data as IUser;
 

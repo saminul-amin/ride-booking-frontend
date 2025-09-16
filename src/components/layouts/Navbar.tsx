@@ -13,14 +13,16 @@ import { useAppDispatch } from "@/redux/hook";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [loggedOut, setLoggedOut] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
   const { data: userInfo, isLoading, isError } = useUserInfoQuery(undefined);
   const [logout] = useLogoutMutation();
 
-  const isLoggedIn = !!userInfo && !isError;
-  const userRole = userInfo?.role || "DRIVER";
+  console.log(userInfo);
+  const isLoggedIn = !!userInfo && !isError && !loggedOut;
+  const userRole = userInfo?.data?.role;
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
@@ -41,7 +43,7 @@ const Navbar = () => {
       { label: "My Rides", href: "/rider/rides" },
       { label: "Profile", href: "/rider/profile" },
     ],
-    DRIVER: [
+    driver: [
       { label: "Dashboard", href: "/driver/dashboard" },
       { label: "Active Rides", href: "/driver/active" },
       { label: "Earnings", href: "/driver/earnings" },
@@ -55,6 +57,7 @@ const Navbar = () => {
     ],
   };
 
+  console.log(isLoggedIn);
   const currentNavItems = isLoggedIn
     ? roleBasedNavItems[userRole as keyof typeof roleBasedNavItems]
     : publicNavItems;
@@ -64,6 +67,7 @@ const Navbar = () => {
     try {
       await logout(undefined);
       dispatch(authApi.util.resetApiState());
+      setLoggedOut(true);
       toast("Successfully logged out!");
       navigate("/");
     } catch (error) {
