@@ -8,7 +8,7 @@ export const getSidebarItems = (userRole: string) => {
       return [...adminSidebarItems];
     case "RIDER":
       return [...riderSidebarItems];
-    case "DRIVER":
+    case "driver":
       return [...driverSidebarItems];
     default:
       return [];

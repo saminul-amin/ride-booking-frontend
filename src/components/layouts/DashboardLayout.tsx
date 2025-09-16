@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Outlet, useLocation, useNavigate, Link } from "react-router";
 import { 
   User, 
@@ -10,7 +10,6 @@ import {
   useUserInfoQuery 
 } from "@/redux/features/auth/auth.api";
 import { toast } from "sonner";
-import type { IRole } from "@/types";
 import { AppSidebar } from "@/components/ui/app-sidebar";
 import {
   SidebarInset,

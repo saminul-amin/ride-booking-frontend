@@ -9,21 +9,19 @@ import {
   ChevronRight,
   Plus,
   Activity,
-  TrendingUp,
 } from "lucide-react";
 import { Link } from "react-router";
 import {
   useGetRideHistoryQuery,
-  useGetAvailableRidesQuery,
 } from "@/redux/features/ride/ride.api";
 import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
 
 const RiderDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
-  const { data: userInfo, isLoading: userLoading } = useUserInfoQuery();
+  const { data: userInfo, isLoading: userLoading } = useUserInfoQuery(undefined);
   const { data: rideHistory, isLoading: historyLoading } =
-    useGetRideHistoryQuery();
+    useGetRideHistoryQuery(undefined);
   //   const { data: availableRides, isLoading: availableLoading } = useGetAvailableRidesQuery();
 
   const tabs = [

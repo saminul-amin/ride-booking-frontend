@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   Car,
   DollarSign,
-  Clock,
   MapPin,
   Star,
   TrendingUp,
@@ -34,7 +33,7 @@ const DriverDashboard = () => {
   const { data: dashboardData, isLoading: dashboardLoading } =
     useGetDriverDashboardQuery(undefined);
   const { data: statsData, isLoading: statsLoading } = useGetDriverStatsQuery(undefined);
-  const { data: availableRides, isLoading: ridesLoading } =
+  const { data: availableRides } =
     useGetAvailableRidesQuery(undefined);
   const [setOnlineStatus] = useSetOnlineStatusMutation();
   const [updateLocation] = useUpdateLocationMutation();

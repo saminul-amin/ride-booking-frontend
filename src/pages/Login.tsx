@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ const loginSchema = z.object({
     .string()
     .min(1, { message: "Password is required" })
     .min(6, { message: "Password must be at least 6 characters long" }),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean(),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -57,7 +57,7 @@ const Login = () => {
 
   const rememberMe = watch("rememberMe");
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit: SubmitHandler<LoginFormData> = async (data: LoginFormData) => {
     setIsLoading(true);
 
     const loginInfo = {

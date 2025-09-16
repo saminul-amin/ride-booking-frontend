@@ -56,7 +56,7 @@ const Navbar = () => {
   };
 
   const currentNavItems = isLoggedIn
-    ? roleBasedNavItems[userRole]
+    ? roleBasedNavItems[userRole as keyof typeof roleBasedNavItems]
     : publicNavItems;
 
   console.log(isLoggedIn, userRole)

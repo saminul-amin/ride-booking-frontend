@@ -2,8 +2,8 @@ import type { ISidebarItem } from "@/types";
 import { lazy } from "react";
 
 // Lazy load admin components
-// const Analytics = lazy(() => import("@/pages/Admin/Analytics"));
-// const UserManagement = lazy(() => import("@/pages/Admin/UserManagement"));
+// const Analytics = lazy(() => import("@/pages/admin/Analytics"));
+const UserManagement = lazy(() => import("@/pages/admin/UserManagement"));
 // const RiderManagement = lazy(() => import("@/pages/Admin/RiderManagement"));
 // const DriverManagement = lazy(() => import("@/pages/Admin/DriverManagement"));
 // const RideOversight = lazy(() => import("@/pages/Admin/RideOversight"));
@@ -23,14 +23,14 @@ export const adminSidebarItems: ISidebarItem[] = [
 //       },
 //     ],
 //   },
-//   {
-//     title: "User Management",
-//     items: [
-//       {
-//         title: "All Users",
-//         url: "/admin/users",
-//         component: UserManagement,
-//       },
+  {
+    title: "User Management",
+    items: [
+      {
+        title: "All Users",
+        url: "/admin/users",
+        component: UserManagement,
+      },
 //       {
 //         title: "Rider Management",
 //         url: "/admin/riders",
@@ -41,8 +41,8 @@ export const adminSidebarItems: ISidebarItem[] = [
 //         url: "/admin/drivers",
 //         component: DriverManagement,
 //       },
-//     ],
-//   },
+    ],
+  },
 //   {
 //     title: "Ride Management",
 //     items: [

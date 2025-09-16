@@ -18,7 +18,9 @@ import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
 import { getSidebarItems } from "@/utils/getSidebarItems";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: userData } = useUserInfoQuery();
+  const { data: userData } = useUserInfoQuery(undefined);
+
+  console.log(userData?.data?.role)
 
   const data = {
     navMain: getSidebarItems(userData?.data?.role),
@@ -45,14 +47,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       
       <SidebarContent className="py-4">
         {/* We create a SidebarGroup for each parent. */}
-        {data.navMain.map((item: any, groupIndex: number) => (
+        {data.navMain.map((item: any) => (
           <SidebarGroup key={item.title} className="mb-2">
             <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 mb-2 hover:text-muted-foreground transition-colors duration-200">
               {item.title}
             </SidebarGroupLabel>
             <SidebarGroupContent className="px-2">
               <SidebarMenu className="space-y-1">
-                {item.items.map((menuItem: any, itemIndex: number) => (
+                {item.items.map((menuItem: any) => (
                   <SidebarMenuItem key={menuItem.title}>
                     <SidebarMenuButton 
                       asChild
