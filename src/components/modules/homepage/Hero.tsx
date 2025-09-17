@@ -63,7 +63,6 @@ const Hero = () => {
     if (!pickup || !destination) {
       return;
     }
-    // Navigate to booking page or login if not authenticated
     navigate("/register");
   };
 
@@ -72,9 +71,11 @@ const Hero = () => {
   };
 
   const handleWatchDemo = () => {
-    // Handle demo video or tour
     console.log("Watch demo clicked");
   };
+
+
+  // console.log(testimonials[currentTestimonial].author.split(" "));
 
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-green-900 overflow-hidden">
@@ -176,7 +177,7 @@ const Hero = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-8">
-              {stats.map((stat, index) => (
+              {stats?.map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className="flex justify-center mb-2">
                     <stat.icon className="w-6 h-6 text-green-500" />
@@ -257,14 +258,7 @@ const Hero = () => {
             {/* Testimonial Card */}
             <Card className="absolute -bottom-4 -left-4 bg-white dark:bg-gray-800 border-0 shadow-xl max-w-sm">
               <CardContent className="p-6">
-                <div className="flex items-center space-x-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
-                </div>
+                
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                   "{testimonials[currentTestimonial].text}"
                 </p>
@@ -272,7 +266,7 @@ const Hero = () => {
                   <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
                     {testimonials[currentTestimonial].author
                       .split(" ")
-                      .map((n) => n[0])
+                      ?.map((n) => n[0])
                       .join("")}
                   </div>
                   <div>

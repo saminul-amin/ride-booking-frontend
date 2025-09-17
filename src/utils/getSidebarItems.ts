@@ -6,7 +6,7 @@ export const getSidebarItems = (userRole: string) => {
   switch (userRole) {
     case "admin":
       return [...adminSidebarItems];
-    case "RIDER":
+    case "rider":
       return [...riderSidebarItems];
     case "driver":
       return [...driverSidebarItems];

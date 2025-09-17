@@ -37,7 +37,7 @@ const Navbar = () => {
   ];
 
   const roleBasedNavItems = {
-    RIDER: [
+    rider: [
       { label: "Dashboard", href: "/rider/dashboard" },
       { label: "Book Ride", href: "/rider/book-ride" },
       { label: "My Rides", href: "/rider/rides" },
@@ -53,7 +53,7 @@ const Navbar = () => {
       { label: "Dashboard", href: "/admin/dashboard" },
       { label: "Users", href: "/admin/users" },
       { label: "Rides", href: "/admin/rides" },
-      { label: "Analytics", href: "/admin/analytics" },
+      { label: "Profile", href: "/admin/profile" },
     ],
   };
 
@@ -142,18 +142,12 @@ const Navbar = () => {
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-popover border">
                     <div className="py-1">
-                      <a
-                        href="/profile"
+                      <Link
+                        to={`${userRole}/profile`}
                         className="block px-4 py-2 text-sm transition-all duration-200 hover:bg-accent hover:text-primary cursor-pointer hover:pl-6"
                       >
                         Profile Settings
-                      </a>
-                      <a
-                        href="/settings"
-                        className="block px-4 py-2 text-sm transition-all duration-200 hover:bg-accent hover:text-primary cursor-pointer hover:pl-6"
-                      >
-                        Account Settings
-                      </a>
+                      </Link>
                       <hr className="my-1" />
                       <button
                         onClick={handleLogout}

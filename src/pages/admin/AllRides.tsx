@@ -60,13 +60,12 @@ const AllRides = () => {
   const rides = ridesData?.data as IRide[] || [];
 
   // Filter rides based on search and status
-  const filteredRides = rides.filter((ride) => {
+  const filteredRides = rides?.filter((ride) => {
     const matchesSearch = 
-      ride.rideId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride.pickup.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride.destination.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride.userInfo?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride.driverInfo?.name.toLowerCase().includes(searchTerm.toLowerCase());
+      ride?.pickup?.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ride?.destination?.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ride?.userInfo?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ride?.driverInfo?.name.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === "all" || ride.status.toLowerCase() === statusFilter.toLowerCase();
 
@@ -134,7 +133,7 @@ const AllRides = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">
             All Rides
           </h1>
           <p className="text-muted-foreground mt-1">

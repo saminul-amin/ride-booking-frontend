@@ -5,7 +5,7 @@ export const adminApi = baseApi.injectEndpoints({
     // User Management
     getAllUsers: builder.query({
       query: () => ({
-        url: "/users/all-users",
+        url: "/user/all-users",
         method: "GET",
       }),
       providesTags: ["USER"],
@@ -13,7 +13,7 @@ export const adminApi = baseApi.injectEndpoints({
 
     getSingleUser: builder.query({
       query: (id: string) => ({
-        url: `/users/${id}`,
+        url: `/user/${id}`,
         method: "GET",
       }),
       providesTags: (_result, _error, id) => [{ type: "USER", id }],
@@ -22,7 +22,7 @@ export const adminApi = baseApi.injectEndpoints({
     // Driver Management
     getOnlineDrivers: builder.query({
       query: () => ({
-        url: "/drivers/online",
+        url: "/driver/online",
         method: "GET",
       }),
       providesTags: ["DRIVER"],
@@ -30,7 +30,7 @@ export const adminApi = baseApi.injectEndpoints({
 
     getAllDrivers: builder.query({
       query: () => ({
-        url: "/drivers/all-drivers",
+        url: "/driver/all-drivers",
         method: "GET",
       }),
       providesTags: ["DRIVER"],
@@ -38,7 +38,7 @@ export const adminApi = baseApi.injectEndpoints({
 
     addDriverEarning: builder.mutation({
       query: ({ id, ...data }) => ({
-        url: `/drivers/${id}/earnings`,
+        url: `/driver/${id}/earnings`,
         method: "POST",
         body: data,
       }),
@@ -50,7 +50,7 @@ export const adminApi = baseApi.injectEndpoints({
 
     updateDriverStats: builder.mutation({
       query: ({ id, ...data }) => ({
-        url: `/drivers/${id}/stats`,
+        url: `/driver/${id}/stats`,
         method: "PATCH",
         body: data,
       }),
@@ -62,7 +62,7 @@ export const adminApi = baseApi.injectEndpoints({
 
     deleteDriverProfile: builder.mutation({
       query: (id: string) => ({
-        url: `/drivers/${id}`,
+        url: `/driver/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (_result, _error, id) => [
@@ -74,7 +74,7 @@ export const adminApi = baseApi.injectEndpoints({
     // Ride Management
     getAllRides: builder.query({
       query: () => ({
-        url: "/rides/all-rides",
+        url: "/ride/all-rides",
         method: "GET",
       }),
       providesTags: ["RIDE"],
@@ -82,7 +82,7 @@ export const adminApi = baseApi.injectEndpoints({
 
     getSingleRide: builder.query({
       query: (id: string) => ({
-        url: `/rides/${id}`,
+        url: `/ride/${id}`,
         method: "GET",
       }),
       providesTags: (_result, _error, id) => [{ type: "RIDE", id }],

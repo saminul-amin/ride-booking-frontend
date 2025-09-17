@@ -24,14 +24,14 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState("all");
 
-  const { data: allUsers, isLoading: usersLoading } = useGetAllUsersQuery(undefined);
-  const { data: selectedUserData, isLoading: userDetailsLoading } = useGetSingleUserQuery(
+  const { data: allUsersData, isLoading: usersLoading } = useGetAllUsersQuery(undefined);
+  const { data: selectedUserData2, isLoading: userDetailsLoading } = useGetSingleUserQuery(
     selectedUser!,
     { skip: !selectedUser }
   );
 
-  console.log(allUsers);
-  console.log(selectedUserData);
+  const allUsers = allUsersData?.data;
+  const selectedUserData = selectedUserData2?.data;
 
   // Filter users based on search term and status
   const filteredUsers = allUsers?.filter((user: any) => {

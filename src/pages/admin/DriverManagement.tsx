@@ -29,10 +29,14 @@ const DriverManagement = () => {
   const [selectedDriver, setSelectedDriver] = useState<any>(null);
   const [filterStatus, setFilterStatus] = useState("all");
 
-  const { data: allDrivers, isLoading: driversLoading } = useGetAllDriversQuery(undefined);
-  const { data: onlineDrivers, isLoading: onlineDriversLoading } = useGetOnlineDriversQuery(undefined);
-  const { data: allRides } = useGetAllRidesQuery(undefined);
+  const { data: allDriversData, isLoading: driversLoading } = useGetAllDriversQuery(undefined);
+  const { data: onlineDriversData, isLoading: onlineDriversLoading } = useGetOnlineDriversQuery(undefined);
+  const { data: allRidesData } = useGetAllRidesQuery(undefined);
   const [deleteDriver] = useDeleteDriverProfileMutation();
+
+  const allDrivers = allDriversData?.data || [];
+  const onlineDrivers = onlineDriversData?.data || [];
+  const allRides = allRidesData?.data || [];
 
   // Filter drivers based on search term and status
   const filteredDrivers = allDrivers?.filter((driver: any) => {

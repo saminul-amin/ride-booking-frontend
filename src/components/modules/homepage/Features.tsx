@@ -161,6 +161,7 @@ const Features = () => {
     drivers: { label: "For Drivers", features: driverFeatures },
   };
 
+  // console.log(tabConfig[activeTab].features);
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
       {/* Background Pattern */}
@@ -191,7 +192,7 @@ const Features = () => {
 
         {/* Core Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-          {coreFeatures.map((feature, index) => (
+          {coreFeatures?.map((feature, index) => (
             <Card
               key={index}
               className="bg-white dark:bg-gray-800 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
@@ -222,7 +223,7 @@ const Features = () => {
           {/* Tab Navigation */}
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="flex">
-              {Object.entries(tabConfig).map(([key, config]) => (
+              {Object.entries(tabConfig)?.map(([key, config]) => (
                 <button
                   key={key}
                   onClick={() => setActiveTab(key as TabKeys)}
@@ -241,7 +242,7 @@ const Features = () => {
           {/* Tab Content */}
           <div className="p-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {tabConfig[activeTab].features.map((feature, index: number) => (
+              {tabConfig[activeTab].features?.map((feature, index: number) => (
                 <Card
                   key={index}
                   className="group bg-gray-50 dark:bg-gray-700 border-0 hover:shadow-lg transition-all duration-300 hover:bg-white dark:hover:bg-gray-600"

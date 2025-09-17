@@ -6,7 +6,6 @@ import {
   TrendingUp,
   UserCheck,
   Activity,
-  MapPin,
   Star,
   DollarSign,
   Calendar,
@@ -26,11 +25,16 @@ import { toast } from "sonner";
 const AdminDashboard = () => {
   const [selectedTab, setSelectedTab] = useState("overview");
 
-  const { data: allUsers, isLoading: usersLoading } = useGetAllUsersQuery(undefined);
-  const { data: allDrivers, isLoading: driversLoading } = useGetAllDriversQuery(undefined);
-  const { data: onlineDrivers, isLoading: onlineDriversLoading } = useGetOnlineDriversQuery(undefined);
-  const { data: allRides, isLoading: ridesLoading } = useGetAllRidesQuery(undefined);
+  const { data: allUsersData, isLoading: usersLoading } = useGetAllUsersQuery(undefined);
+  const { data: allDriversData, isLoading: driversLoading } = useGetAllDriversQuery(undefined);
+  const { data: onlineDriversData } = useGetOnlineDriversQuery(undefined);
+  const { data: allRidesData, isLoading: ridesLoading } = useGetAllRidesQuery(undefined);
   const [deleteDriver] = useDeleteDriverProfileMutation();
+
+  const allUsers = allUsersData?.data || [];
+  const allDrivers = allDriversData?.data || [];
+  const onlineDrivers = onlineDriversData?.data || [];
+  const allRides = allRidesData?.data || [];
 
   const handleDeleteDriver = async (driverId: string) => {
     try {

@@ -163,6 +163,10 @@ const HowItWorks = () => {
 
   const currentConfig = processConfig[activeProcess];
 
+  // console.log(Object.entries(processConfig));
+  // console.log(currentConfig.steps);
+  // console.log(benefits);
+
   return (
     <section className="py-20 bg-white dark:bg-gray-900 relative overflow-hidden">
       {/* Background Elements */}
@@ -193,7 +197,7 @@ const HowItWorks = () => {
         {/* Process Toggle */}
         <div className="flex justify-center mb-16">
           <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-2 inline-flex">
-            {Object.entries(processConfig).map(([key, config]) => (
+            {Object.entries(processConfig)?.map(([key, config]) => (
               <button
                 key={key}
                 onClick={() => setActiveProcess(key as ProcessKeys)}
@@ -228,7 +232,7 @@ const HowItWorks = () => {
             <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-200 via-green-200 to-blue-200 dark:from-blue-800 dark:via-green-800 dark:to-blue-800 transform -translate-y-1/2 z-0"></div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
-              {currentConfig.steps.map((step, index) => (
+              {currentConfig.steps?.map((step, index) => (
                 <Card
                   key={index}
                   className="group bg-white dark:bg-gray-800 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 relative"
@@ -281,7 +285,7 @@ const HowItWorks = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {benefits.map((benefit, index) => (
+            {benefits?.map((benefit, index) => (
               <div key={index} className="text-center group">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-green-100 dark:from-blue-900/50 dark:to-green-900/50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200">
                   <benefit.icon className="w-8 h-8 text-gray-700 dark:text-gray-300" />
