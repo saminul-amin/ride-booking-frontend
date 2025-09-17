@@ -2,27 +2,24 @@ import type { ISidebarItem } from "@/types";
 import { lazy } from "react";
 
 // Lazy load admin components
-// const Analytics = lazy(() => import("@/pages/admin/Analytics"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const UserManagement = lazy(() => import("@/pages/admin/UserManagement"));
-// const RiderManagement = lazy(() => import("@/pages/Admin/RiderManagement"));
-// const DriverManagement = lazy(() => import("@/pages/Admin/DriverManagement"));
-// const RideOversight = lazy(() => import("@/pages/Admin/RideOversight"));
-// const AllRides = lazy(() => import("@/pages/Admin/AllRides"));
-// const RevenueReports = lazy(() => import("@/pages/Admin/RevenueReports"));
-// const DriverActivity = lazy(() => import("@/pages/Admin/DriverActivity"));
-// const AdminProfile = lazy(() => import("@/pages/Admin/AdminProfile"));
+const RiderManagement = lazy(() => import("@/pages/admin/RiderManagement"));
+const DriverManagement = lazy(() => import("@/pages/admin/DriverManagement"));
+const AllRides = lazy(() => import("@/pages/admin/AllRides"));
+const AdminProfile = lazy(() => import("@/pages/admin/AdminProfile"));
 
 export const adminSidebarItems: ISidebarItem[] = [
-//   {
-//     title: "Dashboard",
-//     items: [
-//       {
-//         title: "Analytics",
-//         url: "/admin/analytics",
-//         component: Analytics,
-//       },
-//     ],
-//   },
+  {
+    title: "Dashboard",
+    items: [
+      {
+        title: "Overview",
+        url: "/admin/dashboard",
+        component: AdminDashboard,
+      },
+    ],
+  },
   {
     title: "User Management",
     items: [
@@ -31,56 +28,36 @@ export const adminSidebarItems: ISidebarItem[] = [
         url: "/admin/users",
         component: UserManagement,
       },
-//       {
-//         title: "Rider Management",
-//         url: "/admin/riders",
-//         component: RiderManagement,
-//       },
-//       {
-//         title: "Driver Management",
-//         url: "/admin/drivers",
-//         component: DriverManagement,
-//       },
+      {
+        title: "Rider Management",
+        url: "/admin/riders",
+        component: RiderManagement,
+      },
+      {
+        title: "Driver Management",
+        url: "/admin/drivers",
+        component: DriverManagement,
+      },
     ],
   },
-//   {
-//     title: "Ride Management",
-//     items: [
-//       {
-//         title: "Ride Oversight",
-//         url: "/admin/ride-oversight",
-//         component: RideOversight,
-//       },
-//       {
-//         title: "All Rides",
-//         url: "/admin/rides",
-//         component: AllRides,
-//       },
-//     ],
-//   },
-//   {
-//     title: "Reports & Analytics",
-//     items: [
-//       {
-//         title: "Revenue Reports",
-//         url: "/admin/revenue-reports",
-//         component: RevenueReports,
-//       },
-//       {
-//         title: "Driver Activity",
-//         url: "/admin/driver-activity",
-//         component: DriverActivity,
-//       },
-//     ],
-//   },
-//   {
-//     title: "Account",
-//     items: [
-//       {
-//         title: "Profile Management",
-//         url: "/admin/profile",
-//         component: AdminProfile,
-//       },
-//     ],
-//   },
+  {
+    title: "Ride Management",
+    items: [
+      {
+        title: "All Rides",
+        url: "/admin/rides",
+        component: AllRides,
+      },
+    ],
+  },
+  {
+    title: "Account",
+    items: [
+      {
+        title: "Profile Management",
+        url: "/admin/profile",
+        component: AdminProfile,
+      },
+    ],
+  },
 ];

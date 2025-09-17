@@ -49,7 +49,7 @@ const Navbar = () => {
       { label: "Earnings", href: "/driver/earnings" },
       { label: "Profile", href: "/driver/profile" },
     ],
-    ADMIN: [
+    admin: [
       { label: "Dashboard", href: "/admin/dashboard" },
       { label: "Users", href: "/admin/users" },
       { label: "Rides", href: "/admin/rides" },

@@ -27,8 +27,7 @@ export default function DashboardLayout() {
   const { data: userInfo, isLoading } = useUserInfoQuery(undefined);
   const [logout] = useLogoutMutation();
 
-  // const userRole = (userInfo?.role || "DRIVER") as IRole;
-  const userRole = "DRIVER";
+  const userRole = userInfo?.data?.role;
 
   const handleLogout = async () => {
     try {
@@ -46,7 +45,6 @@ export default function DashboardLayout() {
   };
 
   const getCurrentPageTitle = () => {
-    console.log(userRole);
     const sidebarItems = getSidebarItems(userRole);
     const currentItem = sidebarItems
       .flatMap(section => section.items)
@@ -75,7 +73,7 @@ export default function DashboardLayout() {
 
               {/* Breadcrumb */}
               <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
-                <span className="capitalize">{userRole.toLowerCase()}</span>
+                <span className="capitalize">{userRole?.toLowerCase()}</span>
                 <span>/</span>
                 <span className="text-foreground font-medium">
                   {getCurrentPageTitle()}
