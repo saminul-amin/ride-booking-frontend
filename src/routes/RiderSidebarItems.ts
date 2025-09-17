@@ -5,7 +5,6 @@ import { lazy } from "react";
 const RiderDashboard = lazy(() => import("@/pages/rider/RiderDashboard"));
 const BookRide = lazy(() => import("@/pages/rider/BookRide"));
 const RideHistory = lazy(() => import("@/pages/rider/RideHistory"));
-const RideDetails = lazy(() => import("@/pages/rider/RideDetails"));
 const RiderProfile = lazy(() => import("@/pages/rider/RiderProfile"));
 
 export const riderSidebarItems: ISidebarItem[] = [
@@ -36,11 +35,6 @@ export const riderSidebarItems: ISidebarItem[] = [
         title: "Ride History",
         url: "/rider/ride-history",
         component: RideHistory,
-      },
-      {
-        title: "Ride Details",
-        url: "/rider/ride-details",
-        component: RideDetails,
       },
     ],
   },

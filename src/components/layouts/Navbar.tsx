@@ -106,7 +106,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {currentNavItems.map((item: any) => (
+            {currentNavItems?.map((item: any) => (
               <a
                 key={item.label}
                 href={item.href}
@@ -198,7 +198,7 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            {currentNavItems.map((item: any) => (
+            {currentNavItems?.map((item: any) => (
               <a
                 key={item.label}
                 href={item.href}

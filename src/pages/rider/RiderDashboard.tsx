@@ -19,10 +19,12 @@ import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
 const RiderDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
-  const { data: userInfo, isLoading: userLoading } = useUserInfoQuery(undefined);
-  const { data: rideHistory, isLoading: historyLoading } =
+  const { data: userInfoData, isLoading: userLoading } = useUserInfoQuery(undefined);
+  const { data: rideHistoryData, isLoading: historyLoading } =
     useGetRideHistoryQuery(undefined);
-  //   const { data: availableRides, isLoading: availableLoading } = useGetAvailableRidesQuery();
+
+  const userInfo = userInfoData?.data;
+  const rideHistory = rideHistoryData?.data;
 
   const tabs = [
     { id: "overview", label: "Overview", icon: Activity },
@@ -50,7 +52,7 @@ const RiderDashboard = () => {
               <p className="text-green-100 mt-2">Ready for your next ride?</p>
             </div>
             <Link to="/rider/book-ride">
-              <button className="bg-white text-green-600 px-6 py-3 rounded-lg font-medium hover:bg-green-50 transition-all duration-200 hover:scale-105 hover:shadow-lg flex items-center space-x-2">
+              <button className="bg-white text-green-600 px-6 py-3 rounded-lg font-medium hover:bg-green-50 transition-all duration-200 hover:scale-105 hover:shadow-lg flex items-center space-x-2 cursor-pointer">
                 <Plus className="h-5 w-5" />
                 <span>Book New Ride</span>
               </button>
@@ -178,7 +180,7 @@ const RiderDashboard = () => {
                           </div>
                           <div>
                             <p className="font-medium">
-                              {ride.pickup} → {ride.destination}
+                              {ride?.pickupLocation?.address} → {ride?.destinationLocation?.address}
                             </p>
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                               <span className="flex items-center space-x-1">
@@ -236,7 +238,7 @@ const RiderDashboard = () => {
                 </div>
               ) : rideHistory && rideHistory.length > 0 ? (
                 <div className="space-y-4">
-                  {rideHistory.map((ride: any) => (
+                  {rideHistory?.map((ride: any) => (
                     <div
                       key={ride.id}
                       className="flex items-center justify-between p-4 bg-accent/20 rounded-lg hover:bg-accent/30 transition-colors duration-200"
@@ -247,7 +249,7 @@ const RiderDashboard = () => {
                         </div>
                         <div>
                           <p className="font-medium">
-                            {ride.pickup} → {ride.destination}
+                            {ride?.pickupLocation?.address} → {ride?.destinationLocation?.address}
                           </p>
                           <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                             <span className="flex items-center space-x-1">
