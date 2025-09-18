@@ -121,45 +121,6 @@ const RiderProfile = () => {
           </div>
         </div>
 
-        {/* Rider Statistics */}
-        <div className="bg-card rounded-lg border p-6">
-          <h2 className="text-xl font-semibold mb-6 flex items-center space-x-2">
-            <Bike className="h-5 w-5 text-green-600" />
-            <span>Rider Statistics</span>
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Rating */}
-            {user.rating && (
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  Rating
-                </label>
-                <div className="flex items-center space-x-3 p-3 bg-accent/50 rounded-lg">
-                  <Star className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex items-center space-x-1">
-                    <span>{user.rating.toFixed(1)}</span>
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Total Rides */}
-            {user.totalRides !== undefined && (
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  Total Rides
-                </label>
-                <div className="flex items-center space-x-3 p-3 bg-accent/50 rounded-lg">
-                  <Bike className="h-4 w-4 text-muted-foreground" />
-                  <span>{user.totalRides}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Account Summary */}
         <div className="bg-card rounded-lg border p-6">
           <h2 className="text-xl font-semibold mb-6">Account Summary</h2>
@@ -189,7 +150,7 @@ const RiderProfile = () => {
               <Star className="h-5 w-5 text-orange-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Account Status</p>
-                <p className="font-semibold capitalize">{user.status}</p>
+                <p className="font-semibold capitalize">APPROVED</p>
               </div>
             </div>
           </div>

@@ -508,7 +508,7 @@ const BookRide = () => {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="px-6 py-3 border rounded-lg font-medium hover:bg-accent transition-all duration-200"
+                  className="px-6 py-3 border rounded-lg font-medium hover:bg-accent transition-all duration-200 cursor-pointer"
                 >
                   Back
                 </button>
@@ -517,7 +517,7 @@ const BookRide = () => {
                   disabled={!isValid || isLoading}
                   className={`px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${
                     isValid && !isLoading
-                      ? "bg-green-500 text-white hover:bg-green-600 hover:shadow-lg hover:scale-105"
+                      ? "bg-green-500 text-white hover:bg-green-600 hover:shadow-lg hover:scale-105 cursor-pointer"
                       : "bg-accent text-muted-foreground cursor-not-allowed"
                   }`}
                 >

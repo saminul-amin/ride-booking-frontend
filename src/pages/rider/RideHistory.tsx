@@ -7,24 +7,18 @@ import {
   Calendar,
   CreditCard,
   ChevronLeft,
-  Filter,
   Search,
   Car,
   CheckCircle,
   XCircle,
   Navigation,
   AlertCircle,
-  SortAsc,
-  SortDesc,
 } from "lucide-react";
 import { useGetRideHistoryQuery } from "@/redux/features/ride/ride.api";
 
 const RideHistory = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("date");
-  const [sortOrder, setSortOrder] = useState("desc");
 
   const {
     data: rideHistoryData,
@@ -33,6 +27,7 @@ const RideHistory = () => {
   } = useGetRideHistoryQuery(undefined);
 
   const rideHistory = rideHistoryData?.data;
+  // console.log("Ride History Data:", rideHistory);
 
   const getStatusIcon = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -64,50 +59,18 @@ const RideHistory = () => {
     }
   };
 
-  const filteredAndSortedRides = useMemo(() => {
+  const filteredRides = useMemo(() => {
     if (!rideHistory || !Array.isArray(rideHistory)) return [];
 
-    let filtered = rideHistory.filter((ride: any) => {
+    return rideHistory?.filter((ride: any) => {
       const matchesSearch =
-        ride.pickup?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ride.destination?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ride.pickupLocation?.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ride.destinationLocation?.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         ride.id?.toString().includes(searchTerm);
 
-      const matchesStatus =
-        statusFilter === "all" ||
-        ride.status?.toUpperCase() === statusFilter.toUpperCase();
-
-      return matchesSearch && matchesStatus;
+      return matchesSearch;
     });
-
-    return filtered.sort((a: any, b: any) => {
-      let aValue, bValue;
-
-      switch (sortBy) {
-        case "date":
-          aValue = new Date(a.createdAt).getTime();
-          bValue = new Date(b.createdAt).getTime();
-          break;
-        case "fare":
-          aValue = a.fare || 0;
-          bValue = b.fare || 0;
-          break;
-        case "rating":
-          aValue = a.rating || 0;
-          bValue = b.rating || 0;
-          break;
-        case "status":
-          aValue = a.status || "";
-          bValue = b.status || "";
-          break;
-        default:
-          return 0;
-      }
-
-      const comparison = aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-      return sortOrder === "desc" ? -comparison : comparison;
-    });
-  }, [rideHistory, searchTerm, statusFilter, sortBy, sortOrder]);
+  }, [rideHistory, searchTerm]);
 
   const stats = useMemo(() => {
     if (!rideHistory || !Array.isArray(rideHistory))
@@ -136,15 +99,6 @@ const RideHistory = () => {
       avgRating,
     };
   }, [rideHistory]);
-
-  const toggleSort = (field: string) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(field);
-      setSortOrder("desc");
-    }
-  };
 
   if (isLoading) {
     return (
@@ -178,6 +132,8 @@ const RideHistory = () => {
     );
   }
 
+  // console.log("Filtered Rides:", filteredRides);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -187,7 +143,7 @@ const RideHistory = () => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-green-600 rounded-lg transition-colors duration-200"
+                className="p-2 hover:bg-green-600 rounded-lg transition-colors duration-200 cursor-pointer"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
@@ -256,38 +212,17 @@ const RideHistory = () => {
           </div>
         </div>
 
-        {/* Filters and Search */}
+        {/* Search Only */}
         <div className="bg-card border rounded-lg p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search by location or ride ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
-            </div>
-
-            {/* Status Filter */}
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 cursor-pointer"
-              >
-                <option value="all">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="pending">Pending</option>
-                <option value="in_progress">In Progress</option>
-              </select>
-            </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search by location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
           </div>
         </div>
 
@@ -297,54 +232,20 @@ const RideHistory = () => {
             <h3 className="text-lg font-semibold">Your Rides</h3>
           </div>
 
-          {/* Sort Headers - Desktop */}
+          {/* Headers - Desktop */}
           <div className="hidden md:block border-b bg-accent/20">
             <div className="grid grid-cols-12 gap-4 p-4 text-sm font-medium text-muted-foreground">
               <div className="col-span-4">Route</div>
-              <button
-                onClick={() => toggleSort("date")}
-                className="col-span-2 flex items-center space-x-1 hover:text-primary transition-colors duration-200"
-              >
-                <span>Date</span>
-                {sortBy === "date" &&
-                  (sortOrder === "asc" ? (
-                    <SortAsc className="h-3 w-3" />
-                  ) : (
-                    <SortDesc className="h-3 w-3" />
-                  ))}
-              </button>
-              <div className="col-span-2">Status</div>
-              <button
-                onClick={() => toggleSort("fare")}
-                className="col-span-2 flex items-center space-x-1 hover:text-primary transition-colors duration-200"
-              >
-                <span>Fare</span>
-                {sortBy === "fare" &&
-                  (sortOrder === "asc" ? (
-                    <SortAsc className="h-3 w-3" />
-                  ) : (
-                    <SortDesc className="h-3 w-3" />
-                  ))}
-              </button>
-              <button
-                onClick={() => toggleSort("rating")}
-                className="col-span-2 flex items-center space-x-1 hover:text-primary transition-colors duration-200"
-              >
-                <span>Rating</span>
-                {sortBy === "rating" &&
-                  (sortOrder === "asc" ? (
-                    <SortAsc className="h-3 w-3" />
-                  ) : (
-                    <SortDesc className="h-3 w-3" />
-                  ))}
-              </button>
+              <div className="col-span-3">Date</div>
+              <div className="col-span-3">Status</div>
+              <div className="col-span-2">Rating</div>
             </div>
           </div>
 
           <div className="p-6">
-            {filteredAndSortedRides.length > 0 ? (
+            {filteredRides.length > 0 ? (
               <div className="space-y-4">
-                {filteredAndSortedRides.map((ride: any) => (
+                {filteredRides.map((ride: any) => (
                   <Link
                     key={ride.id}
                     to={`/rider/ride/${ride.id}`}
@@ -359,15 +260,12 @@ const RideHistory = () => {
                           </div>
                           <div className="min-w-0">
                             <p className="font-medium truncate">
-                              {ride.pickup} → {ride.destination}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              ID: #{ride.id}
+                              {ride.pickupLocation?.address} → {ride.destinationLocation?.address}
                             </p>
                           </div>
                         </div>
 
-                        <div className="col-span-2">
+                        <div className="col-span-3">
                           <div className="flex items-center space-x-2 text-sm">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
                             <span>
@@ -385,7 +283,7 @@ const RideHistory = () => {
                           </div>
                         </div>
 
-                        <div className="col-span-2">
+                        <div className="col-span-3">
                           <div className="flex items-center space-x-2">
                             {getStatusIcon(ride.status)}
                             <span
@@ -396,17 +294,6 @@ const RideHistory = () => {
                               {ride.status}
                             </span>
                           </div>
-                        </div>
-
-                        <div className="col-span-2">
-                          <p className="font-semibold">
-                            ${(ride.fare || 0).toFixed(2)}
-                          </p>
-                          {ride.duration && (
-                            <p className="text-sm text-muted-foreground">
-                              {ride.duration}
-                            </p>
-                          )}
                         </div>
 
                         <div className="col-span-2">
@@ -487,23 +374,20 @@ const RideHistory = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                {searchTerm || statusFilter !== "all" ? (
+                {searchTerm ? (
                   <>
                     <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                     <h3 className="text-lg font-semibold mb-2">
                       No rides found
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Try adjusting your search or filter criteria
+                      Try adjusting your search criteria
                     </p>
                     <button
-                      onClick={() => {
-                        setSearchTerm("");
-                        setStatusFilter("all");
-                      }}
+                      onClick={() => setSearchTerm("")}
                       className="text-green-500 hover:text-green-600 font-medium"
                     >
-                      Clear filters
+                      Clear search
                     </button>
                   </>
                 ) : (

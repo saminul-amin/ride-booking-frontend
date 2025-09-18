@@ -156,7 +156,7 @@ const RiderDashboard = () => {
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold">Recent Rides</h3>
                   <Link
-                    to="/rider/rides"
+                    to="/rider/ride-history"
                     className="text-green-500 hover:text-green-600 font-medium text-sm flex items-center space-x-1 transition-colors duration-200"
                   >
                     <span>View All</span>
@@ -192,10 +192,6 @@ const RiderDashboard = () => {
                                     ride.createdAt
                                   ).toLocaleDateString()}
                                 </span>
-                              </span>
-                              <span className="flex items-center space-x-1">
-                                <Clock className="h-3 w-3" />
-                                <span>{ride.duration || "N/A"}</span>
                               </span>
                             </div>
                           </div>
@@ -260,13 +256,9 @@ const RiderDashboard = () => {
                                 {new Date(ride.createdAt).toLocaleDateString()}
                               </span>
                             </span>
-                            <span className="flex items-center space-x-1">
-                              <Clock className="h-3 w-3" />
-                              <span>{ride.duration || "N/A"}</span>
-                            </span>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                ride.status === "COMPLETED"
+                                ride.status === "completed"
                                   ? "bg-green-100 text-green-800"
                                   : ride.status === "CANCELLED"
                                   ? "bg-red-100 text-red-800"
