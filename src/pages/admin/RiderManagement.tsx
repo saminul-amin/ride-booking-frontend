@@ -1,115 +1,77 @@
 import { useState } from "react";
 import {
-  Car,
+  User,
   Search,
-  Filter,
   Mail,
   Phone,
   Calendar,
-  Star,
   Route,
   DollarSign,
-  Eye,
-  Trash2,
-  Activity,
-  TrendingUp,
-  Power,
-  PowerOff,
+  Eye
 } from "lucide-react";
 import {
-  useGetAllDriversQuery,
-  useGetOnlineDriversQuery,
-  useDeleteDriverProfileMutation,
+  useGetAllUsersQuery,
 } from "@/redux/features/admin/admin.api";
 import { useGetAllRidesQuery } from "@/redux/features/admin/admin.api";
-import { toast } from "sonner";
 
 const RiderManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDriver, setSelectedDriver] = useState<any>(null);
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedRider, setSelectedRider] = useState<any>(null);
 
-  const { data: allDriversData, isLoading: driversLoading } = useGetAllDriversQuery(undefined);
-  const { data: onlineDriversData, isLoading: onlineDriversLoading } = useGetOnlineDriversQuery(undefined);
+  const { data: allUsersData, isLoading: usersLoading } =
+    useGetAllUsersQuery(undefined);
   const { data: allRidesData } = useGetAllRidesQuery(undefined);
-  const [deleteDriver] = useDeleteDriverProfileMutation();
 
-  const allDrivers = allDriversData?.data || [];
-  const onlineDrivers = onlineDriversData?.data || [];
+  const allUsers = allUsersData?.data || [];
   const allRides = allRidesData?.data || [];
 
-  // Filter drivers based on search term and status
-  const filteredDrivers = allDrivers?.filter((driver: any) => {
-    const matchesSearch = 
-      driver.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.licenseNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+  const allRiders = allUsers.filter((user: any) => user.role === 'rider');
 
-    const isOnline = onlineDrivers?.some((od: any) => (od.id || od._id) === (driver.id || driver._id));
-    
-    const matchesFilter = 
-      filterStatus === "all" ||
-      (filterStatus === "online" && isOnline) ||
-      (filterStatus === "offline" && !isOnline) ||
-      (filterStatus === "verified" && driver.isVerified) ||
-      (filterStatus === "unverified" && !driver.isVerified);
+  const filteredRiders =
+    allRiders?.filter((rider: any) => {
+      const matchesSearch =
+        rider.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        rider.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        rider.phone?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesFilter;
-  }) || [];
+      return matchesSearch;
+    }) || [];
 
-  // Calculate driver statistics from real data
-  const totalDrivers = allDrivers?.length || 0;
-  const onlineDriversCount = onlineDrivers?.length || 0;
-  const verifiedDrivers = allDrivers?.filter((driver: any) => driver.isVerified)?.length || 0;
-  
-  // Calculate drivers who joined this month
-  const newDriversThisMonth = allDrivers?.filter((driver: any) => {
-    const driverDate = new Date(driver.createdAt);
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    return driverDate.getMonth() === currentMonth && driverDate.getFullYear() === currentYear;
-  })?.length || 0;
+  const totalRiders = allRiders?.length || 0;
 
-  // Calculate total earnings from all rides
-  const totalEarnings = allRides?.reduce((total: number, ride: any) => {
-    if (ride.status === "completed" && ride.fare) {
-      return total + ride.fare;
-    }
-    return total;
-  }, 0) || 0;
+  const newRidersThisMonth =
+    allRiders?.filter((rider: any) => {
+      const riderDate = new Date(rider.createdAt);
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      return (
+        riderDate.getMonth() === currentMonth &&
+        riderDate.getFullYear() === currentYear
+      );
+    })?.length || 0;
 
-  const handleDriverSelect = (driver: any) => {
-    setSelectedDriver(driver);
-  };
-
-  const handleCloseDriverDetails = () => {
-    setSelectedDriver(null);
-  };
-
-  const handleDeleteDriver = async (driverId: string) => {
-    try {
-      await deleteDriver(driverId).unwrap();
-      toast.success("Driver deleted successfully");
-      if (selectedDriver && (selectedDriver.id || selectedDriver._id) === driverId) {
-        setSelectedDriver(null);
+  const totalAmountSpent =
+    allRides?.reduce((total: number, ride: any) => {
+      if (ride.status === "completed" && ride.fare) {
+        return total + ride.fare;
       }
-    } catch (error) {
-      toast.error("Failed to delete driver");
-      console.error("Error deleting driver:", error);
-    }
+      return total;
+    }, 0) || 0;
+
+  const handleRiderSelect = (rider: any) => {
+    setSelectedRider(rider);
   };
 
-  // Get driver's rides from all rides
-  const getDriverRides = (driverId: string) => {
-    return allRides?.filter((ride: any) => 
-      (ride.driver?.id || ride.driver?._id || ride.driverId) === driverId
-    ) || [];
+  const handleCloseRiderDetails = () => {
+    setSelectedRider(null);
   };
 
-  if (driversLoading || onlineDriversLoading) {
+  const getRiderRides = (riderId: string) => {
+    return allRides?.filter((ride: any) => ride.riderId?._id === riderId) || [];
+  };
+
+  if (usersLoading) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-7xl mx-auto">
@@ -137,61 +99,37 @@ const RiderManagement = () => {
               Rider Management
             </h1>
             <p className="text-muted-foreground mt-1">
-              Manage and monitor platform drivers
+              Manage and monitor platform riders
             </p>
           </div>
 
-          {/* Search and Filter */}
+          {/* Search */}
           <div className="flex items-center space-x-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search drivers..."
+                placeholder="Search riders..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="all">All Drivers</option>
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-              <option value="verified">Verified</option>
-              <option value="unverified">Unverified</option>
-            </select>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">Total Drivers</p>
-                <p className="text-2xl font-bold">{totalDrivers}</p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                <Car className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium">Online Drivers</p>
-                <p className="text-2xl font-bold text-green-600">{onlineDriversCount}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {totalDrivers > 0 ? ((onlineDriversCount / totalDrivers) * 100).toFixed(1) : 0}% online
+                <p className="text-muted-foreground text-sm font-medium">
+                  Total Riders
                 </p>
+                <p className="text-2xl font-bold">{totalRiders}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                <Power className="h-6 w-6 text-blue-600" />
+                <User className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </div>
@@ -199,29 +137,37 @@ const RiderManagement = () => {
           <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">Verified Drivers</p>
-                <p className="text-2xl font-bold text-purple-600">{verifiedDrivers}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {totalDrivers > 0 ? ((verifiedDrivers / totalDrivers) * 100).toFixed(1) : 0}% verified
+                <p className="text-muted-foreground text-sm font-medium">
+                  New This Month
                 </p>
-              </div>
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <Star className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium">New This Month</p>
-                <p className="text-2xl font-bold text-orange-600">{newDriversThisMonth}</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {newRidersThisMonth}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Recent signups
                 </p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-orange-600" />
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                <Calendar className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-lg border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-muted-foreground text-sm font-medium">
+                  Total Revenue
+                </p>
+                <p className="text-2xl font-bold text-purple-600">
+                  ${totalAmountSpent.toFixed(2)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  From completed rides
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <DollarSign className="h-6 w-6 text-purple-600" />
               </div>
             </div>
           </div>
@@ -229,88 +175,54 @@ const RiderManagement = () => {
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Drivers List */}
+          {/* Riders List */}
           <div className="lg:col-span-2">
             <div className="bg-card rounded-lg border p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold flex items-center space-x-2">
-                  <Car className="h-5 w-5 text-green-600" />
-                  <span>Drivers List</span>
+                  <User className="h-5 w-5 text-green-600" />
+                  <span>Riders List</span>
                 </h2>
                 <div className="text-sm text-muted-foreground">
-                  {filteredDrivers.length} drivers found
+                  {filteredRiders.length} Riders
                 </div>
               </div>
 
               <div className="space-y-4">
-                {filteredDrivers.length > 0 ? (
-                  filteredDrivers.map((driver: any) => {
-                    const isOnline = onlineDrivers?.some((od: any) => (od.id || od._id) === (driver.id || driver._id));
+                {filteredRiders.length > 0 ? (
+                  filteredRiders.map((rider: any) => {
+                    const riderRides = getRiderRides(rider._id);
+
                     return (
                       <div
-                        key={driver.id || driver._id}
+                        key={rider._id}
                         className="border rounded-lg p-4 hover:border-green-200 dark:hover:border-green-800 cursor-pointer"
-                        onClick={() => handleDriverSelect(driver)}
+                        onClick={() => handleRiderSelect(rider)}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center relative">
+                            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                               <span className="text-green-600 font-medium">
-                                {(driver.user?.name || driver.name)?.charAt(0).toUpperCase() || "D"}
+                                {rider.name?.charAt(0).toUpperCase() || "R"}
                               </span>
-                              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                                isOnline ? "bg-green-500" : "bg-gray-400"
-                              }`}></div>
                             </div>
                             <div>
-                              <p className="font-medium">{driver.user?.name || driver.name || "Unknown Driver"}</p>
+                              <p className="font-medium">
+                                {rider.name || "Unknown Rider"}
+                              </p>
                               <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-1">
                                   <Mail className="h-3 w-3" />
-                                  <span>{driver.user?.email || driver.email || "No email"}</span>
+                                  <span>{rider.email || "No email"}</span>
                                 </div>
-                                {(driver.user?.phone || driver.phone) && (
+                                {rider.phone && (
                                   <div className="flex items-center space-x-1">
                                     <Phone className="h-3 w-3" />
-                                    <span>{driver.user?.phone || driver.phone}</span>
+                                    <span>{rider.phone}</span>
                                   </div>
                                 )}
                               </div>
                             </div>
-                          </div>
-
-                          <div className="flex items-center space-x-3">
-                            <div className="flex items-center space-x-2">
-                              {driver.isVerified && (
-                                <div className="flex items-center space-x-1 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                                  <Star className="h-3 w-3 text-green-600" />
-                                  <span className="text-xs text-green-600 font-medium">Verified</span>
-                                </div>
-                              )}
-                              <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-                                isOnline
-                                  ? "bg-green-100 dark:bg-green-900/30 text-green-600"
-                                  : "bg-gray-100 dark:bg-gray-800 text-gray-600"
-                              }`}>
-                                {isOnline ? (
-                                  <Power className="h-3 w-3" />
-                                ) : (
-                                  <PowerOff className="h-3 w-3" />
-                                )}
-                                <span className="text-xs font-medium">
-                                  {isOnline ? "Online" : "Offline"}
-                                </span>
-                              </div>
-                            </div>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteDriver(driver.id || driver._id);
-                              }}
-                              className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
                           </div>
                         </div>
 
@@ -318,19 +230,12 @@ const RiderManagement = () => {
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-1">
                               <Route className="h-3 w-3" />
-                              <span>{driver.totalRides || 0} rides</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <DollarSign className="h-3 w-3" />
-                              <span>${driver.totalEarnings || 0} earned</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Star className="h-3 w-3 text-yellow-500" />
-                              <span>{driver.rating || driver.totalRating || "No rating"}</span>
+                              <span>{riderRides.length} rides</span>
                             </div>
                           </div>
                           <span>
-                            Joined {new Date(driver.createdAt).toLocaleDateString()}
+                            Joined{" "}
+                            {new Date(rider.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
@@ -338,12 +243,12 @@ const RiderManagement = () => {
                   })
                 ) : (
                   <div className="text-center py-12">
-                    <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      No drivers found matching your criteria
+                      No riders found matching your criteria
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">
-                      Try adjusting your search or filter settings
+                      Try adjusting your search settings
                     </p>
                   </div>
                 )}
@@ -351,15 +256,15 @@ const RiderManagement = () => {
             </div>
           </div>
 
-          {/* Driver Details Sidebar */}
+          {/* Rider Details Sidebar */}
           <div className="space-y-6">
-            {selectedDriver ? (
+            {selectedRider ? (
               <div className="bg-card rounded-lg border p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Driver Details</h3>
+                  <h3 className="text-lg font-semibold">Rider Details</h3>
                   <button
-                    onClick={handleCloseDriverDetails}
-                    className="p-1 hover:bg-accent rounded"
+                    onClick={handleCloseRiderDetails}
+                    className="p-1 hover:bg-accent rounded cursor-pointer"
                   >
                     ×
                   </button>
@@ -367,98 +272,53 @@ const RiderManagement = () => {
 
                 <div className="space-y-4">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3 relative">
+                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-green-600 font-medium text-xl">
-                        {(selectedDriver.user?.name || selectedDriver.name)?.charAt(0).toUpperCase() || "D"}
+                        {selectedRider.name?.charAt(0).toUpperCase() || "R"}
                       </span>
-                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${
-                        onlineDrivers?.some((od: any) => (od.id || od._id) === (selectedDriver.id || selectedDriver._id))
-                          ? "bg-green-500" : "bg-gray-400"
-                      }`}></div>
                     </div>
-                    <h4 className="font-semibold">{selectedDriver.user?.name || selectedDriver.name || "Unknown Driver"}</h4>
+                    <h4 className="font-semibold">
+                      {selectedRider.name || "Unknown Rider"}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      {selectedDriver.user?.email || selectedDriver.email || "No email"}
+                      {selectedRider.email || "No email"}
                     </p>
                   </div>
 
                   <div className="space-y-3 border-t pt-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Phone</span>
+                      <span className="text-sm text-muted-foreground">
+                        Phone
+                      </span>
                       <span className="text-sm font-medium">
-                        {selectedDriver.user?.phone || selectedDriver.phone || "Not provided"}
+                        {selectedRider.phone || "Not provided"}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">License</span>
+                      <span className="text-sm text-muted-foreground">
+                        Role
+                      </span>
+                      <span className="text-sm font-medium capitalize">
+                        {selectedRider.role || "Rider"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Total Rides
+                      </span>
                       <span className="text-sm font-medium">
-                        {selectedDriver.licenseNumber || "Not provided"}
+                        {getRiderRides(selectedRider._id).length}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Vehicle</span>
+                      <span className="text-sm text-muted-foreground">
+                        Joined
+                      </span>
                       <span className="text-sm font-medium">
-                        {selectedDriver.vehicleType || selectedDriver.vehicle?.type || "Not specified"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Status</span>
-                      <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-                        onlineDrivers?.some((od: any) => (od.id || od._id) === (selectedDriver.id || selectedDriver._id))
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-600"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-600"
-                      }`}>
-                        {onlineDrivers?.some((od: any) => (od.id || od._id) === (selectedDriver.id || selectedDriver._id)) ? (
-                          <Power className="h-3 w-3" />
-                        ) : (
-                          <PowerOff className="h-3 w-3" />
-                        )}
-                        <span className="text-xs font-medium">
-                          {onlineDrivers?.some((od: any) => (od.id || od._id) === (selectedDriver.id || selectedDriver._id)) ? "Online" : "Offline"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Verified</span>
-                      <span className={`text-sm font-medium ${
-                        selectedDriver.isVerified ? "text-green-600" : "text-red-600"
-                      }`}>
-                        {selectedDriver.isVerified ? "Yes" : "No"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Total Rides</span>
-                      <span className="text-sm font-medium">
-                        {selectedDriver.totalRides || getDriverRides(selectedDriver.id || selectedDriver._id).length || 0}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Total Earnings</span>
-                      <span className="text-sm font-medium text-green-600">
-                        ${selectedDriver.totalEarnings || 0}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Rating</span>
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-3 w-3 text-yellow-500" />
-                        <span className="text-sm font-medium">
-                          {selectedDriver.rating || selectedDriver.totalRating || "No rating"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Joined</span>
-                      <span className="text-sm font-medium">
-                        {new Date(selectedDriver.createdAt).toLocaleDateString()}
+                        {new Date(selectedRider.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -466,72 +326,15 @@ const RiderManagement = () => {
               </div>
             ) : (
               <div className="bg-card rounded-lg border p-6">
-                <h3 className="text-lg font-semibold mb-4">Driver Details</h3>
+                <h3 className="text-lg font-semibold mb-4">Rider Details</h3>
                 <div className="text-center py-8">
                   <Eye className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    Select a driver to view details
+                    Select a rider to view details
                   </p>
                 </div>
               </div>
             )}
-
-            {/* Platform Health */}
-            <div className="bg-card rounded-lg border p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
-                <Activity className="h-5 w-5 text-green-600" />
-                <span>Driver Stats</span>
-              </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Online Rate</span>
-                  <span className="font-medium text-green-600">
-                    {totalDrivers > 0 ? ((onlineDriversCount / totalDrivers) * 100).toFixed(1) : 0}%
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Verification Rate</span>
-                  <span className="font-medium">
-                    {totalDrivers > 0 ? ((verifiedDrivers / totalDrivers) * 100).toFixed(1) : 0}%
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Growth (Monthly)</span>
-                  <span className="font-medium text-green-600">
-                    +{newDriversThisMonth}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Total Revenue</span>
-                  <span className="font-medium text-green-600">
-                    ${totalEarnings.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-card rounded-lg border p-6">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3">
-                  <Mail className="h-4 w-4" />
-                  <span>Send Notification</span>
-                </button>
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>Driver Analytics</span>
-                </button>
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3">
-                  <DollarSign className="h-4 w-4" />
-                  <span>Earnings Report</span>
-                </button>
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3">
-                  <Filter className="h-4 w-4" />
-                  <span>Advanced Filters</span>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>

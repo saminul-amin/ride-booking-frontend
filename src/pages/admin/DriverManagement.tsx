@@ -1,17 +1,13 @@
 import { useState } from "react";
 import {
   Search,
-  Filter,
   Mail,
   Phone,
   Calendar,
   Star,
   Route,
-  DollarSign,
   Eye,
   Trash2,
-  Activity,
-  TrendingUp,
   Power,
   PowerOff,
   Users,
@@ -27,10 +23,11 @@ import { toast } from "sonner";
 const DriverManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<any>(null);
-  const [filterStatus, setFilterStatus] = useState("all");
 
-  const { data: allDriversData, isLoading: driversLoading } = useGetAllDriversQuery(undefined);
-  const { data: onlineDriversData, isLoading: onlineDriversLoading } = useGetOnlineDriversQuery(undefined);
+  const { data: allDriversData, isLoading: driversLoading } =
+    useGetAllDriversQuery(undefined);
+  const { data: onlineDriversData, isLoading: onlineDriversLoading } =
+    useGetOnlineDriversQuery(undefined);
   const { data: allRidesData } = useGetAllRidesQuery(undefined);
   const [deleteDriver] = useDeleteDriverProfileMutation();
 
@@ -38,39 +35,31 @@ const DriverManagement = () => {
   const onlineDrivers = onlineDriversData?.data || [];
   const allRides = allRidesData?.data || [];
 
-  // Filter drivers based on search term and status
-  const filteredDrivers = allDrivers?.filter((driver: any) => {
-    const matchesSearch = 
-      driver.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.licenseNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+  console.log("All Drivers:", allDrivers);
 
-    const isOnline = onlineDrivers?.some((od: any) => (od.id || od._id) === (driver.id || driver._id));
-    
-    const matchesFilter = 
-      filterStatus === "all" ||
-      (filterStatus === "online" && isOnline) ||
-      (filterStatus === "offline" && !isOnline) ||
-      (filterStatus === "verified" && driver.isVerified) ||
-      (filterStatus === "unverified" && !driver.isVerified);
+  const filteredDrivers =
+    allDrivers?.filter((driver: any) => {
+      const matchesSearch =
+        driver.userId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        driver.userId?.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesFilter;
-  }) || [];
+      return matchesSearch;
+    }) || [];
 
-  // Calculate driver statistics
   const totalDrivers = allDrivers?.length || 0;
   const onlineDriversCount = onlineDrivers?.length || 0;
-  const verifiedDrivers = allDrivers?.filter((driver: any) => driver.isVerified)?.length || 0;
-  
-  const newDriversThisMonth = allDrivers?.filter((driver: any) => {
-    const driverDate = new Date(driver.createdAt);
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    return driverDate.getMonth() === currentMonth && driverDate.getFullYear() === currentYear;
-  })?.length || 0;
+
+  const newDriversThisMonth =
+    allDrivers?.filter((driver: any) => {
+      const driverDate = new Date(driver.createdAt);
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      return (
+        driverDate.getMonth() === currentMonth &&
+        driverDate.getFullYear() === currentYear
+      );
+    })?.length || 0;
 
   const handleDriverSelect = (driver: any) => {
     setSelectedDriver(driver);
@@ -84,7 +73,7 @@ const DriverManagement = () => {
     try {
       await deleteDriver(driverId).unwrap();
       toast.success("Driver deleted successfully");
-      if (selectedDriver && (selectedDriver.id || selectedDriver._id) === driverId) {
+      if (selectedDriver && selectedDriver._id === driverId) {
         setSelectedDriver(null);
       }
     } catch (error) {
@@ -93,11 +82,12 @@ const DriverManagement = () => {
     }
   };
 
+  console.log("All Rides:", allRides);
   // Get driver's rides
   const getDriverRides = (driverId: string) => {
-    return allRides?.filter((ride: any) => 
-      (ride.driver?.id || ride.driver?._id || ride.driverId) === driverId
-    ) || [];
+    return (
+      allRides?.filter((ride: any) => ride.driverId?._id === driverId) || []
+    );
   };
 
   if (driversLoading || onlineDriversLoading) {
@@ -144,26 +134,17 @@ const DriverManagement = () => {
                 className="pl-10 pr-4 py-2 border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="all">All Drivers</option>
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-              <option value="verified">Verified</option>
-              <option value="unverified">Unverified</option>
-            </select>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">Total Drivers</p>
+                <p className="text-muted-foreground text-sm font-medium">
+                  Total Drivers
+                </p>
                 <p className="text-2xl font-bold">{totalDrivers}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -175,10 +156,17 @@ const DriverManagement = () => {
           <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">Online Now</p>
-                <p className="text-2xl font-bold text-green-600">{onlineDriversCount}</p>
+                <p className="text-muted-foreground text-sm font-medium">
+                  Online Now
+                </p>
+                <p className="text-2xl font-bold text-green-600">
+                  {onlineDriversCount}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {totalDrivers > 0 ? ((onlineDriversCount / totalDrivers) * 100).toFixed(1) : 0}% active
+                  {totalDrivers > 0
+                    ? ((onlineDriversCount / totalDrivers) * 100).toFixed(1)
+                    : 0}
+                  % active
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -190,23 +178,12 @@ const DriverManagement = () => {
           <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">Verified</p>
-                <p className="text-2xl font-bold text-purple-600">{verifiedDrivers}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {totalDrivers > 0 ? ((verifiedDrivers / totalDrivers) * 100).toFixed(1) : 0}% verified
+                <p className="text-muted-foreground text-sm font-medium">
+                  New This Month
                 </p>
-              </div>
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <Star className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium">New This Month</p>
-                <p className="text-2xl font-bold text-orange-600">{newDriversThisMonth}</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {newDriversThisMonth}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Recent joins
                 </p>
@@ -236,36 +213,47 @@ const DriverManagement = () => {
               <div className="space-y-4">
                 {filteredDrivers.length > 0 ? (
                   filteredDrivers.map((driver: any) => {
-                    const isOnline = onlineDrivers?.some((od: any) => (od.id || od._id) === (driver.id || driver._id));
-                    const driverRides = getDriverRides(driver.id || driver._id);
-                    
+                    const isOnline = onlineDrivers?.some(
+                      (od: any) => od._id === driver._id
+                    );
+                    const driverRides = getDriverRides(driver.userId?._id);
+
                     return (
                       <div
                         key={driver.id || driver._id}
-                        className="border rounded-lg p-4 hover:border-blue-200 dark:hover:border-blue-800 cursor-pointer transition-colors"
+                        className="border rounded-lg p-4 hover:border-green-200 dark:hover:border-green-800 cursor-pointer transition-colors"
                         onClick={() => handleDriverSelect(driver)}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center relative">
-                              <span className="text-blue-600 font-medium">
-                                {(driver.user?.name || driver.name)?.charAt(0).toUpperCase() || "D"}
+                            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center relative">
+                              <span className="text-green-600 font-medium">
+                                {driver.userId?.name?.charAt(0).toUpperCase() ||
+                                  "D"}
                               </span>
-                              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                                isOnline ? "bg-green-500" : "bg-gray-400"
-                              }`}></div>
+                              <div
+                                className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                                  isOnline ? "bg-green-500" : "bg-gray-400"
+                                }`}
+                              ></div>
                             </div>
                             <div>
-                              <p className="font-medium">{driver.user?.name || driver.name || "Unknown Driver"}</p>
+                              <p className="font-medium">
+                                {driver.userId?.name || "Unknown Driver"}
+                              </p>
                               <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-1">
                                   <Mail className="h-3 w-3" />
-                                  <span>{driver.user?.email || driver.email || "No email"}</span>
+                                  <span>
+                                    {driver.userId?.email || "No email"}
+                                  </span>
                                 </div>
-                                {(driver.user?.phone || driver.phone) && (
+                                {(driver.userId?.phone || driver.phone) && (
                                   <div className="flex items-center space-x-1">
                                     <Phone className="h-3 w-3" />
-                                    <span>{driver.user?.phone || driver.phone}</span>
+                                    <span>
+                                      {driver.userId?.phone || "No phone"}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -274,17 +262,13 @@ const DriverManagement = () => {
 
                           <div className="flex items-center space-x-3">
                             <div className="flex items-center space-x-2">
-                              {driver.isVerified && (
-                                <div className="flex items-center space-x-1 bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded-full">
-                                  <Star className="h-3 w-3 text-purple-600" />
-                                  <span className="text-xs text-purple-600 font-medium">Verified</span>
-                                </div>
-                              )}
-                              <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-                                isOnline
-                                  ? "bg-green-100 dark:bg-green-900/30 text-green-600"
-                                  : "bg-gray-100 dark:bg-gray-800 text-gray-600"
-                              }`}>
+                              <div
+                                className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
+                                  isOnline
+                                    ? "bg-green-100 dark:bg-green-900/30 text-green-600"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-600"
+                                }`}
+                              >
                                 {isOnline ? (
                                   <Power className="h-3 w-3" />
                                 ) : (
@@ -295,10 +279,10 @@ const DriverManagement = () => {
                                 </span>
                               </div>
                             </div>
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteDriver(driver.id || driver._id);
+                                handleDeleteDriver(driver._id);
                               }}
                               className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-red-600 transition-colors"
                             >
@@ -314,16 +298,13 @@ const DriverManagement = () => {
                               <span>{driverRides.length} rides</span>
                             </div>
                             <div className="flex items-center space-x-1">
-                              <DollarSign className="h-3 w-3" />
-                              <span>${driver.totalEarnings || 0} earned</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
                               <Star className="h-3 w-3 text-yellow-500" />
-                              <span>{driver.rating || driver.totalRating || "No rating"}</span>
+                              <span>No rating</span>
                             </div>
                           </div>
                           <span>
-                            Joined {new Date(driver.createdAt).toLocaleDateString()}
+                            Joined{" "}
+                            {new Date(driver.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
@@ -352,7 +333,7 @@ const DriverManagement = () => {
                   <h3 className="text-lg font-semibold">Driver Details</h3>
                   <button
                     onClick={handleCloseDriverDetails}
-                    className="p-1 hover:bg-accent rounded transition-colors"
+                    className="p-1 hover:bg-accent rounded transition-colors cursor-pointer"
                   >
                     ×
                   </button>
@@ -360,91 +341,96 @@ const DriverManagement = () => {
 
                 <div className="space-y-4">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3 relative">
-                      <span className="text-blue-600 font-medium text-xl">
-                        {(selectedDriver.user?.name || selectedDriver.name)?.charAt(0).toUpperCase() || "D"}
+                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3 relative">
+                      <span className="text-green-600 font-medium text-xl">
+                        {selectedDriver.userId?.name?.charAt(0).toUpperCase() ||
+                          "D"}
                       </span>
-                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${
-                        onlineDrivers?.some((od: any) => (od.id || od._id) === (selectedDriver.id || selectedDriver._id))
-                          ? "bg-green-500" : "bg-gray-400"
-                      }`}></div>
+                      <div
+                        className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${
+                          onlineDrivers?.some(
+                            (od: any) => od._id === selectedDriver._id
+                          )
+                            ? "bg-green-500"
+                            : "bg-gray-400"
+                        }`}
+                      ></div>
                     </div>
-                    <h4 className="font-semibold">{selectedDriver.user?.name || selectedDriver.name || "Unknown Driver"}</h4>
+                    <h4 className="font-semibold">
+                      {selectedDriver.userId?.name || "Unknown Driver"}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      {selectedDriver.user?.email || selectedDriver.email || "No email"}
+                      {selectedDriver.userId?.email || "No email"}
                     </p>
                   </div>
 
                   <div className="space-y-3 border-t pt-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Status</span>
-                      <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-                        onlineDrivers?.some((od: any) => (od.id || od._id) === (selectedDriver.id || selectedDriver._id))
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-600"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-600"
-                      }`}>
-                        {onlineDrivers?.some((od: any) => (od.id || od._id) === (selectedDriver.id || selectedDriver._id)) ? (
+                      <span className="text-sm text-muted-foreground">
+                        Status
+                      </span>
+                      <div
+                        className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
+                          onlineDrivers?.some(
+                            (od: any) => od._id === selectedDriver._id
+                          )
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-600"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-600"
+                        }`}
+                      >
+                        {onlineDrivers?.some(
+                          (od: any) => od._id === selectedDriver._id
+                        ) ? (
                           <Power className="h-3 w-3" />
                         ) : (
                           <PowerOff className="h-3 w-3" />
                         )}
                         <span className="text-xs font-medium">
-                          {onlineDrivers?.some((od: any) => (od.id || od._id) === (selectedDriver.id || selectedDriver._id)) ? "Online" : "Offline"}
+                          {onlineDrivers?.some(
+                            (od: any) => od._id === selectedDriver._id
+                          )
+                            ? "Online"
+                            : "Offline"}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Phone</span>
+                      <span className="text-sm text-muted-foreground">
+                        Phone
+                      </span>
                       <span className="text-sm font-medium">
-                        {selectedDriver.user?.phone || selectedDriver.phone || "Not provided"}
+                        {selectedDriver.userId?.phone || "Not provided"}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">License</span>
+                      <span className="text-sm text-muted-foreground">
+                        Total Rides
+                      </span>
                       <span className="text-sm font-medium">
-                        {selectedDriver.licenseNumber || "Not provided"}
+                        {getDriverRides(selectedDriver.userId?._id).length || 0}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Verified</span>
-                      <span className={`text-sm font-medium ${
-                        selectedDriver.isVerified ? "text-green-600" : "text-red-600"
-                      }`}>
-                        {selectedDriver.isVerified ? "Yes" : "No"}
+                      <span className="text-sm text-muted-foreground">
+                        Rating
                       </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Total Rides</span>
-                      <span className="text-sm font-medium">
-                        {getDriverRides(selectedDriver.id || selectedDriver._id).length || 0}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Earnings</span>
-                      <span className="text-sm font-medium text-green-600">
-                        ${selectedDriver.totalEarnings || 0}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Rating</span>
                       <div className="flex items-center space-x-1">
                         <Star className="h-3 w-3 text-yellow-500" />
-                        <span className="text-sm font-medium">
-                          {selectedDriver.rating || selectedDriver.totalRating || "No rating"}
-                        </span>
+                        <span className="text-sm font-medium">No rating</span>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Joined</span>
+                      <span className="text-sm text-muted-foreground">
+                        Joined
+                      </span>
                       <span className="text-sm font-medium">
-                        {new Date(selectedDriver.createdAt).toLocaleDateString()}
+                        {new Date(
+                          selectedDriver.createdAt
+                        ).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -461,53 +447,6 @@ const DriverManagement = () => {
                 </div>
               </div>
             )}
-
-            {/* Quick Stats */}
-            <div className="bg-card rounded-lg border p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
-                <Activity className="h-5 w-5 text-blue-600" />
-                <span>Platform Stats</span>
-              </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Online Rate</span>
-                  <span className="font-medium text-green-600">
-                    {totalDrivers > 0 ? ((onlineDriversCount / totalDrivers) * 100).toFixed(1) : 0}%
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Verification Rate</span>
-                  <span className="font-medium">
-                    {totalDrivers > 0 ? ((verifiedDrivers / totalDrivers) * 100).toFixed(1) : 0}%
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">New This Month</span>
-                  <span className="font-medium text-orange-600">
-                    +{newDriversThisMonth}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-card rounded-lg border p-6">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3 transition-colors">
-                  <Mail className="h-4 w-4" />
-                  <span>Send Notification</span>
-                </button>
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3 transition-colors">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>View Analytics</span>
-                </button>
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3 transition-colors">
-                  <Filter className="h-4 w-4" />
-                  <span>Advanced Filters</span>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>

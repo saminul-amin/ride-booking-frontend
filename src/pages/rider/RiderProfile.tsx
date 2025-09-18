@@ -5,7 +5,6 @@ import {
   MapPin,
   Calendar,
   Star,
-  Bike,
 } from "lucide-react";
 import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
 

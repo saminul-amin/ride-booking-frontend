@@ -1,7 +1,6 @@
 import {
   MapPin,
   Calendar,
-  DollarSign,
   User,
   Car,
   Search,
@@ -11,19 +10,18 @@ import {
 import { useState } from "react";
 import { useGetAllRidesQuery } from "@/redux/features/admin/admin.api";
 
-// Ride interface definition
 interface IRide {
   _id: string;
   rideId: string;
-  userId: string;
-  driverId: string;
-  pickup: {
+  pickupLocation: {
     address: string;
-    coordinates: [number, number];
+    longitude?: number;
+    latitude?: number;
   };
-  destination: {
+  destinationLocation: {
     address: string;
-    coordinates: [number, number];
+    longitude?: number;
+    latitude?: number;
   };
   fare: number;
   distance: number;
@@ -36,11 +34,11 @@ interface IRide {
   startTime?: string;
   endTime?: string;
   rating?: number;
-  userInfo?: {
+  riderId?: {
     name: string;
     phone: string;
   };
-  driverInfo?: {
+  driverId?: {
     name: string;
     phone: string;
     vehicleInfo?: {
@@ -57,47 +55,38 @@ const AllRides = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedRide, setSelectedRide] = useState<IRide | null>(null);
 
-  const rides = ridesData?.data as IRide[] || [];
+  const rides = (ridesData?.data as IRide[]) || [];
 
-  // Filter rides based on search and status
   const filteredRides = rides?.filter((ride) => {
-    const matchesSearch = 
-      ride?.pickup?.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride?.destination?.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride?.userInfo?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ride?.driverInfo?.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      ride?.pickupLocation?.address
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      ride?.destinationLocation?.address
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      ride?.riderId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ride?.driverId?.name.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === "all" || ride.status.toLowerCase() === statusFilter.toLowerCase();
+    const matchesStatus =
+      statusFilter === "all" ||
+      ride.status.toLowerCase() === statusFilter.toLowerCase();
 
     return matchesSearch && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'completed':
-        return 'text-green-600 bg-green-100 dark:bg-green-900/30';
-      case 'active':
-      case 'in-progress':
-        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30';
-      case 'cancelled':
-        return 'text-red-600 bg-red-100 dark:bg-red-900/30';
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30';
+      case "completed":
+        return "text-green-600 bg-green-100 dark:bg-green-900/30";
+      case "in-progress":
+        return "text-blue-600 bg-blue-100 dark:bg-blue-900/30";
+      case "cancelled":
+        return "text-red-600 bg-red-100 dark:bg-red-900/30";
+      case "requested":
+        return "text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30";
       default:
-        return 'text-gray-600 bg-gray-100 dark:bg-gray-900/30';
-    }
-  };
-
-  const getPaymentStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'paid':
-        return 'text-green-600 bg-green-100 dark:bg-green-900/30';
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30';
-      case 'failed':
-        return 'text-red-600 bg-red-100 dark:bg-red-900/30';
-      default:
-        return 'text-gray-600 bg-gray-100 dark:bg-gray-900/30';
+        return "text-gray-600 bg-gray-100 dark:bg-gray-900/30";
     }
   };
 
@@ -152,7 +141,7 @@ const AllRides = () => {
                 placeholder="Search by Ride ID, location, user or driver..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-background"
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-background"
               />
             </div>
 
@@ -162,7 +151,7 @@ const AllRides = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="pl-10 pr-8 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-background"
+                className="pl-10 pr-8 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-background"
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
@@ -176,24 +165,35 @@ const AllRides = () => {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t">
             <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">{rides.length}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {rides.length}
+              </p>
               <p className="text-sm text-muted-foreground">Total Rides</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-600">
-                {rides.filter(r => r.status.toLowerCase() === 'active').length}
+                {
+                  rides.filter((r) => r.status.toLowerCase() === "active")
+                    .length
+                }
               </p>
               <p className="text-sm text-muted-foreground">Active</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">
-                {rides.filter(r => r.status.toLowerCase() === 'completed').length}
+                {
+                  rides.filter((r) => r.status.toLowerCase() === "completed")
+                    .length
+                }
               </p>
               <p className="text-sm text-muted-foreground">Completed</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-red-600">
-                {rides.filter(r => r.status.toLowerCase() === 'cancelled').length}
+                {
+                  rides.filter((r) => r.status.toLowerCase() === "cancelled")
+                    .length
+                }
               </p>
               <p className="text-sm text-muted-foreground">Cancelled</p>
             </div>
@@ -210,12 +210,14 @@ const AllRides = () => {
           ) : (
             <div className="divide-y">
               {filteredRides.map((ride) => (
-                <div key={ride._id} className="p-6 hover:bg-accent/20 transition-colors">
+                <div
+                  key={ride._id}
+                  className="p-6 hover:bg-accent/20 transition-colors"
+                >
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
                     {/* Ride Info */}
                     <div className="lg:col-span-3">
                       <div className="space-y-1">
-                        <p className="font-medium">#{ride.rideId}</p>
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {new Date(ride.createdAt).toLocaleDateString()}
@@ -231,7 +233,7 @@ const AllRides = () => {
                           <div>
                             <p className="text-sm font-medium">From</p>
                             <p className="text-sm text-muted-foreground line-clamp-1">
-                              {ride.pickup.address}
+                              {ride.pickupLocation?.address}
                             </p>
                           </div>
                         </div>
@@ -240,7 +242,7 @@ const AllRides = () => {
                           <div>
                             <p className="text-sm font-medium">To</p>
                             <p className="text-sm text-muted-foreground line-clamp-1">
-                              {ride.destination.address}
+                              {ride.destinationLocation?.address}
                             </p>
                           </div>
                         </div>
@@ -250,37 +252,34 @@ const AllRides = () => {
                     {/* User & Driver */}
                     <div className="lg:col-span-2">
                       <div className="space-y-2">
-                        {ride.userInfo && (
+                        {ride.riderId && (
                           <div className="flex items-center gap-2">
                             <User className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-sm">{ride.userInfo.name}</span>
+                            <span className="text-sm">{ride.riderId.name}</span>
                           </div>
                         )}
-                        {ride.driverInfo && (
+                        {ride.driverId && (
                           <div className="flex items-center gap-2">
                             <Car className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-sm">{ride.driverInfo.name}</span>
+                            <span className="text-sm">
+                              {ride.driverId.name}
+                            </span>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Fare & Status */}
+                    {/* Status */}
                     <div className="lg:col-span-2">
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-medium">${ride.fare}</span>
-                        </div>
                         <div className="space-y-1">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(ride.status)}`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              ride.status
+                            )}`}
+                          >
                             {ride.status.toUpperCase()}
                           </span>
-                          <div>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(ride.paymentStatus)}`}>
-                              {ride.paymentStatus.toUpperCase()}
-                            </span>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -289,7 +288,7 @@ const AllRides = () => {
                     <div className="lg:col-span-1">
                       <button
                         onClick={() => setSelectedRide(ride)}
-                        className="p-2 hover:bg-accent rounded-lg transition-colors"
+                        className="p-2 hover:bg-accent rounded-lg transition-colors cursor-pointer"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
@@ -311,7 +310,7 @@ const AllRides = () => {
                 <h3 className="text-lg font-semibold">Ride Details</h3>
                 <button
                   onClick={() => setSelectedRide(null)}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   ×
                 </button>
@@ -320,66 +319,60 @@ const AllRides = () => {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Ride ID</label>
-                  <p className="font-mono">{selectedRide.rideId}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <p className={`inline-block px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedRide.status)}`}>
+                  <label className="text-sm font-bold text-muted-foreground">
+                    Status:{" "}
+                  </label>
+                  <p
+                    className={`inline-block px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                      selectedRide.status
+                    )}`}
+                  >
                     {selectedRide.status.toUpperCase()}
                   </p>
                 </div>
+              </div>
+
+              {selectedRide.riderId && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Fare</label>
-                  <p className="font-semibold">${selectedRide.fare}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Distance</label>
-                  <p>{selectedRide.distance} km</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Payment Method</label>
-                  <p className="capitalize">{selectedRide.paymentMethod}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Payment Status</label>
-                  <p className={`inline-block px-2 py-1 rounded text-xs font-medium ${getPaymentStatusColor(selectedRide.paymentStatus)}`}>
-                    {selectedRide.paymentStatus.toUpperCase()}
+                  <label className="text-sm font-bold text-muted-foreground">
+                    User
+                  </label>
+                  <p>
+                    {selectedRide.riderId.name} ( {selectedRide.riderId.phone} )
                   </p>
                 </div>
-              </div>
-              
-              {selectedRide.userInfo && (
+              )}
+
+              {selectedRide.driverId && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">User</label>
-                  <p>{selectedRide.userInfo.name} - {selectedRide.userInfo.phone}</p>
+                  <label className="text-sm font-bold text-muted-foreground">
+                    Driver
+                  </label>
+                  <p>
+                    {selectedRide.driverId.name} ( {selectedRide.driverId.phone}{" "}
+                    )
+                  </p>
                 </div>
               )}
-              
-              {selectedRide.driverInfo && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Driver</label>
-                  <p>{selectedRide.driverInfo.name} - {selectedRide.driverInfo.phone}</p>
-                  {selectedRide.driverInfo.vehicleInfo && (
-                    <p className="text-sm text-muted-foreground">
-                      {selectedRide.driverInfo.vehicleInfo.make} {selectedRide.driverInfo.vehicleInfo.model} - {selectedRide.driverInfo.vehicleInfo.licensePlate}
-                    </p>
-                  )}
-                </div>
-              )}
-              
+
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Pickup Location</label>
-                <p>{selectedRide.pickup.address}</p>
+                <label className="text-sm font-bold text-muted-foreground">
+                  Pickup Location
+                </label>
+                <p>{selectedRide.pickupLocation?.address}</p>
               </div>
-              
+
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Destination</label>
-                <p>{selectedRide.destination.address}</p>
+                <label className="text-sm font-bold text-muted-foreground">
+                  Destination
+                </label>
+                <p>{selectedRide.destinationLocation?.address}</p>
               </div>
-              
+
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Created At</label>
+                <label className="text-sm font-bold text-muted-foreground">
+                  Created At
+                </label>
                 <p>{new Date(selectedRide.createdAt).toLocaleString()}</p>
               </div>
             </div>

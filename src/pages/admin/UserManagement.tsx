@@ -2,17 +2,12 @@ import { useState } from "react";
 import {
   Users,
   Search,
-  Filter,
   Mail,
   Phone,
   Calendar,
   Star,
-  Route,
-  DollarSign,
   Eye,
   UserCheck,
-  UserX,
-  Activity,
 } from "lucide-react";
 import {
   useGetAllUsersQuery,
@@ -33,6 +28,8 @@ const UserManagement = () => {
   const allUsers = allUsersData?.data;
   const selectedUserData = selectedUserData2?.data;
 
+  console.log("All Users:", allUsers);
+
   // Filter users based on search term and status
   const filteredUsers = allUsers?.filter((user: any) => {
     const matchesSearch = 
@@ -42,18 +39,19 @@ const UserManagement = () => {
 
     const matchesFilter = 
       filterStatus === "all" ||
-      (filterStatus === "active" && user.isActive) ||
-      (filterStatus === "inactive" && !user.isActive) ||
-      (filterStatus === "verified" && user.isVerified) ||
-      (filterStatus === "unverified" && !user.isVerified);
+      (filterStatus === "riders" && user.role === "rider") ||
+      (filterStatus === "drivers" && user.role === "driver");
 
     return matchesSearch && matchesFilter;
   }) || [];
 
   // Calculate user statistics
   const totalUsers = allUsers?.length || 0;
-  const activeUsers = allUsers?.filter((user: any) => user.isActive)?.length || 0;
-  const verifiedUsers = allUsers?.filter((user: any) => user.isVerified)?.length || 0;
+  let riders = 0, drivers = 0;
+  allUsers?.forEach((user: any) => {
+    if (user.role === "rider") riders++;
+    else if (user.role === "driver") drivers++;
+  });
   const newUsersThisMonth = allUsers?.filter((user: any) => {
     const userDate = new Date(user.createdAt);
     const currentDate = new Date();
@@ -117,13 +115,11 @@ const UserManagement = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
             >
               <option value="all">All Users</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="verified">Verified</option>
-              <option value="unverified">Unverified</option>
+              <option value="drivers">Drivers</option>
+              <option value="riders">Riders</option>
             </select>
           </div>
         </div>
@@ -145,10 +141,10 @@ const UserManagement = () => {
           <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">Active Users</p>
-                <p className="text-2xl font-bold text-green-600">{activeUsers}</p>
+                <p className="text-muted-foreground text-sm font-medium">Riders</p>
+                <p className="text-2xl font-bold text-green-600">{riders}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {totalUsers > 0 ? ((activeUsers / totalUsers) * 100).toFixed(1) : 0}% of total
+                  {totalUsers > 0 ? ((riders / totalUsers) * 100).toFixed(1) : 0}% of total
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -160,10 +156,10 @@ const UserManagement = () => {
           <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-muted-foreground text-sm font-medium">Verified Users</p>
-                <p className="text-2xl font-bold text-blue-600">{verifiedUsers}</p>
+                <p className="text-muted-foreground text-sm font-medium">Drivers</p>
+                <p className="text-2xl font-bold text-blue-600">{drivers}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {totalUsers > 0 ? ((verifiedUsers / totalUsers) * 100).toFixed(1) : 0}% verified
+                  {totalUsers > 0 ? ((drivers / totalUsers) * 100).toFixed(1) : 0}% verified
                 </p>
               </div>
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
@@ -199,7 +195,7 @@ const UserManagement = () => {
                   <span>Users List</span>
                 </h2>
                 <div className="text-sm text-muted-foreground">
-                  {filteredUsers.length} users found
+                  {filteredUsers.length} Users
                 </div>
               </div>
 
@@ -207,14 +203,14 @@ const UserManagement = () => {
                 {filteredUsers.length > 0 ? (
                   filteredUsers.map((user: any) => (
                     <div
-                      key={user.id || user._id}
-                      className="border rounded-lg p-4 hover:border-blue-200 dark:hover:border-blue-800 cursor-pointer"
-                      onClick={() => handleUserSelect(user.id || user._id)}
+                      key={user._id}
+                      className="border rounded-lg p-4 hover:border-blue-200 dark:hover:border-green-800 cursor-pointer"
+                      onClick={() => handleUserSelect(user._id)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 font-medium">
+                          <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                            <span className="text-green-600 font-medium">
                               {user.name?.charAt(0).toUpperCase() || "U"}
                             </span>
                           </div>
@@ -234,47 +230,9 @@ const UserManagement = () => {
                             </div>
                           </div>
                         </div>
-
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center space-x-2">
-                            {user.isVerified && (
-                              <div className="flex items-center space-x-1 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                                <Star className="h-3 w-3 text-green-600" />
-                                <span className="text-xs text-green-600 font-medium">Verified</span>
-                              </div>
-                            )}
-                            <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-                              user.isActive
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-600"
-                                : "bg-red-100 dark:bg-red-900/30 text-red-600"
-                            }`}>
-                              {user.isActive ? (
-                                <UserCheck className="h-3 w-3" />
-                              ) : (
-                                <UserX className="h-3 w-3" />
-                              )}
-                              <span className="text-xs font-medium">
-                                {user.isActive ? "Active" : "Inactive"}
-                              </span>
-                            </div>
-                          </div>
-                          <button className="p-2 hover:bg-accent rounded-lg">
-                            <Eye className="h-4 w-4" />
-                          </button>
-                        </div>
                       </div>
 
                       <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-1">
-                            <Route className="h-3 w-3" />
-                            <span>{user.totalRides || 0} rides</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <DollarSign className="h-3 w-3" />
-                            <span>${user.totalSpent || 0} spent</span>
-                          </div>
-                        </div>
                         <span>
                           Joined {new Date(user.createdAt).toLocaleDateString()}
                         </span>
@@ -304,7 +262,7 @@ const UserManagement = () => {
                   <h3 className="text-lg font-semibold">User Details</h3>
                   <button
                     onClick={handleCloseUserDetails}
-                    className="p-1 hover:bg-accent rounded"
+                    className="p-1 hover:bg-accent rounded cursor-pointer"
                   >
                     ×
                   </button>
@@ -319,8 +277,8 @@ const UserManagement = () => {
                 ) : (
                   <div className="space-y-4">
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-blue-600 font-medium text-xl">
+                      <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-green-600 font-medium text-xl">
                           {selectedUserData.name?.charAt(0).toUpperCase() || "U"}
                         </span>
                       </div>
@@ -339,44 +297,13 @@ const UserManagement = () => {
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Status</span>
-                        <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-                          selectedUserData.isActive
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-600"
-                            : "bg-red-100 dark:bg-red-900/30 text-red-600"
-                        }`}>
-                          {selectedUserData.isActive ? (
-                            <UserCheck className="h-3 w-3" />
-                          ) : (
-                            <UserX className="h-3 w-3" />
-                          )}
+                        <span className="text-sm text-muted-foreground">Role</span>
+                        <div className="flex items-center space-x-1 px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+                          
                           <span className="text-xs font-medium">
-                            {selectedUserData.isActive ? "Active" : "Inactive"}
+                            {selectedUserData?.role.toUpperCase() || "N/A"}
                           </span>
                         </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Verified</span>
-                        <span className={`text-sm font-medium ${
-                          selectedUserData.isVerified ? "text-green-600" : "text-red-600"
-                        }`}>
-                          {selectedUserData.isVerified ? "Yes" : "No"}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Total Rides</span>
-                        <span className="text-sm font-medium">
-                          {selectedUserData.totalRides || 0}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Total Spent</span>
-                        <span className="text-sm font-medium text-green-600">
-                          ${selectedUserData.totalSpent || 0}
-                        </span>
                       </div>
 
                       <div className="flex items-center justify-between">
@@ -410,53 +337,6 @@ const UserManagement = () => {
                 </div>
               </div>
             )}
-
-            {/* Quick Stats */}
-            <div className="bg-card rounded-lg border p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
-                <Activity className="h-5 w-5 text-blue-600" />
-                <span>Quick Stats</span>
-              </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Online Users</span>
-                  <span className="font-medium text-green-600">
-                    {activeUsers}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Verification Rate</span>
-                  <span className="font-medium">
-                    {totalUsers > 0 ? ((verifiedUsers / totalUsers) * 100).toFixed(1) : 0}%
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Growth (Monthly)</span>
-                  <span className="font-medium text-blue-600">
-                    +{newUsersThisMonth}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-card rounded-lg border p-6">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3">
-                  <Mail className="h-4 w-4" />
-                  <span>Send Notification</span>
-                </button>
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3">
-                  <Users className="h-4 w-4" />
-                  <span>Export Users</span>
-                </button>
-                <button className="w-full text-left p-3 rounded-lg hover:bg-accent flex items-center space-x-3">
-                  <Filter className="h-4 w-4" />
-                  <span>Advanced Filters</span>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
