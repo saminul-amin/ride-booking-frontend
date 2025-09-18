@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  Car,
-  Clock,
-  DollarSign,
-  Star,
-  Calendar,
-  Filter,
-  Route,
-  User,
-} from "lucide-react";
+import { Car, Clock, Calendar, Filter } from "lucide-react";
 import { useGetRideHistoryQuery } from "@/redux/features/ride/ride.api";
 import { toast } from "sonner";
 
@@ -16,7 +7,11 @@ const DriverRideHistory = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
 
-  const { data: rideHistory, isLoading, error } = useGetRideHistoryQuery(undefined);
+  const {
+    data: rideHistory,
+    isLoading,
+    error,
+  } = useGetRideHistoryQuery(undefined);
 
   const handleFilterChange = (status: string) => {
     setFilterStatus(status);
@@ -100,7 +95,10 @@ const DriverRideHistory = () => {
   // Sort rides
   const sortedRides = [...filteredRides].sort((a: any, b: any) => {
     if (sortBy === "recent") {
-      return new Date(b.createdAt || b.requestedAt).getTime() - new Date(a.createdAt || a.requestedAt).getTime();
+      return (
+        new Date(b.createdAt || b.requestedAt).getTime() -
+        new Date(a.createdAt || a.requestedAt).getTime()
+      );
     }
     if (sortBy === "earnings") {
       return (b.fare || 0) - (a.fare || 0);
@@ -117,7 +115,9 @@ const DriverRideHistory = () => {
         {/* Header */}
         <div className="flex items-center space-x-4">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">Ride History</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">
+              Ride History
+            </h1>
             <p className="text-muted-foreground mt-1">
               View all your completed and past rides
             </p>
@@ -142,7 +142,7 @@ const DriverRideHistory = () => {
                   <option value="ongoing">Ongoing</option>
                 </select>
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium">Sort by:</span>
                 <select
@@ -180,7 +180,9 @@ const DriverRideHistory = () => {
                         <div>
                           <p className="font-medium">Pickup Location</p>
                           <p className="text-sm text-muted-foreground">
-                            {ride.pickupLocation?.address || ride.pickup || "Unknown location"}
+                            {ride.pickupLocation?.address ||
+                              ride.pickup ||
+                              "Unknown location"}
                           </p>
                         </div>
                       </div>
@@ -190,7 +192,9 @@ const DriverRideHistory = () => {
                         <div>
                           <p className="font-medium">Drop-off Location</p>
                           <p className="text-sm text-muted-foreground">
-                            {ride.dropoffLocation?.address || ride.destination || "Unknown location"}
+                            {ride.destinationLocation?.address ||
+                              ride.destination ||
+                              "Unknown location"}
                           </p>
                         </div>
                       </div>
@@ -200,32 +204,17 @@ const DriverRideHistory = () => {
                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
-                        <span>{formatDate(ride.createdAt || ride.requestedAt)}</span>
+                        <span>
+                          {formatDate(ride.createdAt || ride.requestedAt)}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
-                        <span>{formatTime(ride.createdAt || ride.requestedAt)}</span>
+                        <span>
+                          {formatTime(ride.createdAt || ride.requestedAt)}
+                        </span>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <Route className="h-4 w-4" />
-                        <span>{ride.distance || "N/A"}</span>
-                      </div>
-                      {ride.duration && (
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{ride.duration}</span>
-                        </div>
-                      )}
                     </div>
-
-                    {/* Passenger Info */}
-                    {ride.passenger && (
-                      <div className="flex items-center space-x-2 text-sm">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Passenger:</span>
-                        <span className="font-medium">{ride.passenger.name || "Unknown"}</span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Ride Stats */}
@@ -239,21 +228,6 @@ const DriverRideHistory = () => {
                         {ride.status || "Unknown"}
                       </span>
                     </div>
-
-                    {ride.fare && (
-                      <div className="flex items-center space-x-1">
-                        <DollarSign className="h-4 w-4 text-green-600" />
-                        <span className="font-bold text-green-600">${ride.fare}</span>
-                      </div>
-                    )}
-
-                    {ride.rating && (
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                        <span className="font-medium">{ride.rating}</span>
-                      </div>
-                    )}
-
                     <div className="text-xs text-muted-foreground">
                       Ride ID: {(ride.id || ride._id)?.slice(-8) || "Unknown"}
                     </div>
@@ -265,8 +239,8 @@ const DriverRideHistory = () => {
             <div className="text-center py-12">
               <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                {filterStatus === "all" 
-                  ? "No ride history found" 
+                {filterStatus === "all"
+                  ? "No ride history found"
                   : `No ${filterStatus} rides found`}
               </p>
               <p className="text-sm text-muted-foreground mt-2">
@@ -280,31 +254,32 @@ const DriverRideHistory = () => {
         {rides.length > 0 && (
           <div className="bg-card rounded-lg border p-6">
             <h3 className="text-lg font-semibold mb-4">Summary Statistics</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-2xl font-bold">{rides.length}</p>
                 <p className="text-sm text-muted-foreground">Total Rides</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">
-                  {rides.filter((ride: any) => ride.status?.toLowerCase() === "completed").length}
+                  {
+                    rides.filter(
+                      (ride: any) => ride.status?.toLowerCase() === "completed"
+                    ).length
+                  }
                 </p>
                 <p className="text-sm text-muted-foreground">Completed</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold">
-                  ${rides.reduce((sum: number, ride: any) => sum + (ride.fare || 0), 0).toFixed(2)}
-                </p>
-                <p className="text-sm text-muted-foreground">Total Earnings</p>
-              </div>
+
               <div className="text-center">
                 <p className="text-2xl font-bold">
                   {rides.filter((ride: any) => ride.rating).length > 0
                     ? (
                         rides
                           .filter((ride: any) => ride.rating)
-                          .reduce((sum: number, ride: any) => sum + ride.rating, 0) /
-                        rides.filter((ride: any) => ride.rating).length
+                          .reduce(
+                            (sum: number, ride: any) => sum + ride.rating,
+                            0
+                          ) / rides.filter((ride: any) => ride.rating).length
                       ).toFixed(1)
                     : "N/A"}
                 </p>

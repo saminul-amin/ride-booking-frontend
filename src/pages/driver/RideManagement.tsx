@@ -4,7 +4,6 @@ import {
   User,
   Phone,
   Star,
-  DollarSign,
   AlertTriangle,
   Timer,
 } from "lucide-react";
@@ -17,7 +16,13 @@ import {
 import { toast } from "sonner";
 
 // Ride status types
-type RideStatus = 'pending' | 'accepted' | 'picked_up' | 'in_transit' | 'completed' | 'cancelled';
+type RideStatus =
+  | "pending"
+  | "accepted"
+  | "picked_up"
+  | "in_transit"
+  | "completed"
+  | "cancelled";
 
 interface RideRequest {
   _id: string;
@@ -27,50 +32,56 @@ interface RideRequest {
     rating?: number;
     profileImage?: string;
   };
-  pickup: {
+  pickupLocation: {
     address: string;
-    coordinates?: [number, number];
+    latitude?: number;
+    longitude?: number;
   };
-  destination: {
+  destinationLocation: {
     address: string;
-    coordinates?: [number, number];
+    latitude?: number;
+    longitude?: number;
   };
-  distance?: string;
-  duration?: string;
-  fare: number;
   createdAt: string;
   status: RideStatus;
   notes?: string;
-  paymentMethod?: string;
 }
 
 const RideManagement = () => {
-  const [activeTab, setActiveTab] = useState<'available' | 'active'>('available');
-  // const [sosMode, setSosMode] = useState(false);
-
-  // API hooks
-  const { data: availableRidesData, isLoading: availableLoading, error: availableError, refetch: refetchAvailable } = useGetAvailableRidesQuery(undefined);
-  const { data: rideHistoryData, isLoading: historyLoading, error: historyError, refetch: refetchHistory } = useGetRideHistoryQuery(undefined);
-  const [acceptRide, { isLoading: acceptLoading }] = useAcceptRideMutation();
-  const [updateRideStatus, { isLoading: updateLoading }] = useUpdateRideStatusMutation();
-
-  // Extract data from API responses with safety checks
-  const availableRides = availableRidesData?.data?.filter((ride: any) => ride && ride.rider) || [];
-  const rideHistory = rideHistoryData?.data?.filter((ride: any) => ride && ride.rider) || [];
-  
-  // Filter active rides from history (rides that are not completed or cancelled)
-  const activeRides = rideHistory.filter((ride: RideRequest) => 
-    ['accepted', 'picked_up', 'in_transit'].includes(ride.status)
+  const [activeTab, setActiveTab] = useState<"available" | "active">(
+    "available"
   );
 
-  // Handle ride acceptance
+  const {
+    data: availableRidesData,
+    isLoading: availableLoading,
+    error: availableError,
+    refetch: refetchAvailable,
+  } = useGetAvailableRidesQuery(undefined);
+  const {
+    data: rideHistoryData,
+    isLoading: historyLoading,
+    error: historyError,
+    refetch: refetchHistory,
+  } = useGetRideHistoryQuery(undefined);
+  const [acceptRide, { isLoading: acceptLoading }] = useAcceptRideMutation();
+  const [updateRideStatus, { isLoading: updateLoading }] =
+    useUpdateRideStatusMutation();
+
+  const availableRides = availableRidesData?.data;
+  const rideHistory = rideHistoryData?.data;
+
+  const activeRides = rideHistory?.filter((ride: RideRequest) =>
+    ["accepted", "picked_up", "in_transit"].includes(ride.status)
+  );
+
   const handleAcceptRide = async (rideId: string) => {
     if (acceptLoading) return;
-    
+
     try {
       await acceptRide(rideId).unwrap();
       toast.success("Ride accepted successfully!");
-      setActiveTab('active');
+      setActiveTab("active");
       refetchAvailable();
       refetchHistory();
     } catch (error: any) {
@@ -80,64 +91,92 @@ const RideManagement = () => {
     }
   };
 
-  // Handle status updates
   const handleStatusUpdate = async (rideId: string, newStatus: RideStatus) => {
     if (updateLoading) return;
-    
+
     try {
-      await updateRideStatus({ id: rideId, statusData: { status: newStatus } }).unwrap();
-      const statusLabel = newStatus.replace('_', ' ').toLowerCase();
+      await updateRideStatus({
+        id: rideId,
+        statusData: { status: newStatus },
+      }).unwrap();
+      const statusLabel = newStatus.replace("_", " ").toLowerCase();
       toast.success(`Ride status updated to ${statusLabel}`);
       refetchHistory();
     } catch (error: any) {
-      const errorMessage = error?.data?.message || "Failed to update ride status";
+      const errorMessage =
+        error?.data?.message || "Failed to update ride status";
       toast.error(errorMessage);
       console.error("Error updating status:", error);
     }
   };
 
-  // Get status display info
   const getStatusInfo = (status: RideStatus) => {
     switch (status) {
-      case 'pending':
-        return { color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', label: 'Pending' };
-      case 'accepted':
-        return { color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20', label: 'Accepted' };
-      case 'picked_up':
-        return { color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', label: 'Picked Up' };
-      case 'in_transit':
-        return { color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20', label: 'In Transit' };
-      case 'completed':
-        return { color: 'text-green-700', bg: 'bg-green-50 dark:bg-green-900/20', label: 'Completed' };
-      case 'cancelled':
-        return { color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20', label: 'Cancelled' };
+      case "pending":
+        return {
+          color: "text-orange-600",
+          bg: "bg-orange-50 dark:bg-orange-900/20",
+          label: "Pending",
+        };
+      case "accepted":
+        return {
+          color: "text-blue-600",
+          bg: "bg-blue-50 dark:bg-blue-900/20",
+          label: "Accepted",
+        };
+      case "picked_up":
+        return {
+          color: "text-green-600",
+          bg: "bg-green-50 dark:bg-green-900/20",
+          label: "Picked Up",
+        };
+      case "in_transit":
+        return {
+          color: "text-purple-600",
+          bg: "bg-purple-50 dark:bg-purple-900/20",
+          label: "In Transit",
+        };
+      case "completed":
+        return {
+          color: "text-green-700",
+          bg: "bg-green-50 dark:bg-green-900/20",
+          label: "Completed",
+        };
+      case "cancelled":
+        return {
+          color: "text-red-600",
+          bg: "bg-red-50 dark:bg-red-900/20",
+          label: "Cancelled",
+        };
       default:
-        return { color: 'text-gray-600', bg: 'bg-gray-50 dark:bg-gray-900/20', label: 'Unknown' };
+        return {
+          color: "text-gray-600",
+          bg: "bg-gray-50 dark:bg-gray-900/20",
+          label: "Unknown",
+        };
     }
   };
 
-  // Get next status options
   const getNextStatusOptions = (currentStatus: RideStatus) => {
     switch (currentStatus) {
-      case 'accepted':
-        return ['picked_up', 'cancelled'];
-      case 'picked_up':
-        return ['in_transit', 'cancelled'];
-      case 'in_transit':
-        return ['completed'];
+      case "accepted":
+        return ["picked_up", "cancelled"];
+      case "picked_up":
+        return ["in_transit", "cancelled"];
+      case "in_transit":
+        return ["completed"];
       default:
         return [];
     }
   };
 
-  // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 1) return 'Just now';
+
+    if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins} min ago`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
     return date.toLocaleDateString();
@@ -152,7 +191,10 @@ const RideManagement = () => {
             <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded"></div>
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 dark:bg-gray-800 rounded"></div>
+                <div
+                  key={i}
+                  className="h-32 bg-gray-200 dark:bg-gray-800 rounded"
+                ></div>
               ))}
             </div>
           </div>
@@ -161,7 +203,6 @@ const RideManagement = () => {
     );
   }
 
-  // Handle API errors
   if (availableError || historyError) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
@@ -170,9 +211,11 @@ const RideManagement = () => {
             <AlertTriangle className="h-10 w-10 text-red-500 mx-auto mb-3" />
             <h3 className="text-lg font-medium mb-2">Error Loading Rides</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {(availableError as any)?.data?.message || (historyError as any)?.data?.message || "Failed to load ride data"}
+              {(availableError as any)?.data?.message ||
+                (historyError as any)?.data?.message ||
+                "Failed to load ride data"}
             </p>
-            <button 
+            <button
               onClick={() => {
                 refetchAvailable();
                 refetchHistory();
@@ -205,21 +248,21 @@ const RideManagement = () => {
         {/* Tab Navigation */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border p-1 flex">
           <button
-            onClick={() => setActiveTab('available')}
+            onClick={() => setActiveTab("available")}
             className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors cursor-pointer ${
-              activeTab === 'available'
-                ? 'bg-gradient-to-r from-green-400 to-green-600 text-white'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white '
+              activeTab === "available"
+                ? "bg-gradient-to-r from-green-400 to-green-600 text-white"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white "
             }`}
           >
             Available ({availableRides.length})
           </button>
           <button
-            onClick={() => setActiveTab('active')}
+            onClick={() => setActiveTab("active")}
             className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors cursor-pointer ${
-              activeTab === 'active'
-                ? 'bg-gradient-to-r from-green-400 to-green-600 text-white'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              activeTab === "active"
+                ? "bg-gradient-to-r from-green-400 to-green-600 text-white"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             }`}
           >
             Active ({activeRides.length})
@@ -228,18 +271,23 @@ const RideManagement = () => {
 
         {/* Content */}
         <div className="space-y-4">
-          {activeTab === 'available' ? (
+          {activeTab === "available" ? (
             availableRides.length > 0 ? (
               availableRides.map((ride: RideRequest) => (
-                <div key={ride._id} className="bg-white dark:bg-gray-800 rounded-lg border p-4">
+                <div
+                  key={ride._id}
+                  className="bg-white dark:bg-gray-800 rounded-lg border p-4"
+                >
                   {/* Header */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-blue-600" />
+                        <User className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{ride.rider?.name || 'Unknown Rider'}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {ride.rider?.name || "Unknown Rider"}
+                        </p>
                         <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                           {ride.rider?.rating && (
                             <>
@@ -252,23 +300,21 @@ const RideManagement = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-green-600">${ride.fare}</p>
-                      {ride.distance && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{ride.distance}</p>
-                      )}
-                    </div>
                   </div>
 
                   {/* Route */}
                   <div className="space-y-2 mb-3">
                     <div className="flex items-center space-x-2 text-sm">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-gray-900 dark:text-white">{ride.pickup.address}</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {ride.pickupLocation?.address}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-2 text-sm">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-gray-900 dark:text-white">{ride.destination.address}</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {ride.destinationLocation?.address}
+                      </span>
                     </div>
                   </div>
 
@@ -281,20 +327,14 @@ const RideManagement = () => {
                           <span>{ride.rider.phone}</span>
                         </div>
                       )}
-                      {ride.paymentMethod && (
-                        <div className="flex items-center space-x-1">
-                          <DollarSign className="h-4 w-4" />
-                          <span>{ride.paymentMethod}</span>
-                        </div>
-                      )}
                     </div>
                     <button
                       onClick={() => handleAcceptRide(ride._id)}
                       disabled={acceptLoading}
                       className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
                         acceptLoading
-                          ? 'bg-gray-400 cursor-not-allowed text-white'
-                          : 'bg-green-600 hover:bg-green-700 text-white'
+                          ? "bg-gray-400 cursor-not-allowed text-white"
+                          : "bg-green-600 hover:bg-green-700 text-white"
                       }`}
                     >
                       {acceptLoading ? "Accepting..." : "Accept"}
@@ -305,104 +345,114 @@ const RideManagement = () => {
             ) : (
               <div className="bg-white dark:bg-gray-800 rounded-lg border p-8 text-center">
                 <Timer className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Available Rides</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  No Available Rides
+                </h3>
                 <p className="text-gray-600 dark:text-gray-400">
                   Stay online to receive ride requests
                 </p>
               </div>
             )
-          ) : (
-            activeRides.length > 0 ? (
-              activeRides.map((ride: RideRequest) => {
-                const statusInfo = getStatusInfo(ride.status);
-                const nextOptions = getNextStatusOptions(ride.status);
+          ) : activeRides.length > 0 ? (
+            activeRides.map((ride: RideRequest) => {
+              const statusInfo = getStatusInfo(ride.status);
+              const nextOptions = getNextStatusOptions(ride.status);
 
-                return (
-                  <div key={ride._id} className="bg-white dark:bg-gray-800 rounded-lg border p-4">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                          <User className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{ride.rider?.name || 'Unknown Rider'}</p>
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${statusInfo.bg} ${statusInfo.color}`}>
-                            {statusInfo.label}
-                          </span>
-                        </div>
+              return (
+                <div
+                  key={ride._id}
+                  className="bg-white dark:bg-gray-800 rounded-lg border p-4"
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-green-600" />
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-semibold text-green-600">${ride.fare}</p>
-                        {ride.distance && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{ride.distance}</p>
-                        )}
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {ride.rider?.name || "Unknown Rider"}
+                        </p>
+                        <span
+                          className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${statusInfo.bg} ${statusInfo.color}`}
+                        >
+                          {statusInfo.label}
+                        </span>
                       </div>
-                    </div>
-
-                    {/* Route */}
-                    <div className="space-y-2 mb-3">
-                      <div className="flex items-center space-x-2 text-sm">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-gray-900 dark:text-white">{ride.pickup.address}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-gray-900 dark:text-white">{ride.destination.address}</span>
-                      </div>
-                    </div>
-
-                    {/* Contact & Status Updates */}
-                    <div className="pt-3 border-t space-y-3">
-                      {ride.rider?.phone && (
-                        <div className="flex items-center space-x-2 text-sm">
-                          <Phone className="h-4 w-4 text-gray-400" />
-                          <a 
-                            href={`tel:${ride.rider.phone}`}
-                            className="text-blue-600 hover:text-blue-700"
-                          >
-                            {ride.rider.phone}
-                          </a>
-                        </div>
-                      )}
-
-                      {/* Status Update Buttons */}
-                      {nextOptions.length > 0 && (
-                        <div className="flex space-x-2">
-                          {nextOptions.map((status) => (
-                            <button
-                              key={status}
-                              onClick={() => handleStatusUpdate(ride._id, status as RideStatus)}
-                              disabled={updateLoading}
-                              className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-                                updateLoading
-                                  ? 'bg-gray-400 cursor-not-allowed text-white'
-                                  : status === 'cancelled'
-                                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-                              }`}
-                            >
-                              {updateLoading 
-                                ? "Updating..." 
-                                : status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
-                              }
-                            </button>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
-                );
-              })
-            ) : (
-              <div className="bg-white dark:bg-gray-800 rounded-lg border p-8 text-center">
-                <Car className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Active Rides</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Accept available rides to see them here
-                </p>
-              </div>
-            )
+
+                  {/* Route */}
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center space-x-2 text-sm">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-gray-900 dark:text-white">
+                        {ride.pickupLocation?.address}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-gray-900 dark:text-white">
+                        {ride.destinationLocation?.address}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Contact & Status Updates */}
+                  <div className="pt-3 border-t space-y-3">
+                    {ride.rider?.phone && (
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Phone className="h-4 w-4 text-gray-400" />
+                        <a
+                          href={`tel:${ride.rider.phone}`}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          {ride.rider.phone}
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Status Update Buttons */}
+                    {nextOptions.length > 0 && (
+                      <div className="flex space-x-2">
+                        {nextOptions.map((status) => (
+                          <button
+                            key={status}
+                            onClick={() =>
+                              handleStatusUpdate(ride._id, status as RideStatus)
+                            }
+                            disabled={updateLoading}
+                            className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+                              updateLoading
+                                ? "bg-gray-400 cursor-not-allowed text-white"
+                                : status === "cancelled"
+                                ? "bg-red-600 hover:bg-red-700 text-white"
+                                : "bg-green-600 hover:bg-green-700 text-white"
+                            }`}
+                          >
+                            {updateLoading
+                              ? "Updating..."
+                              : status
+                                  .replace("_", " ")
+                                  .replace(/\b\w/g, (l) => l.toUpperCase())}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="bg-white dark:bg-gray-800 rounded-lg border p-8 text-center">
+              <Car className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No Active Rides
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Accept available rides to see them here
+              </p>
+            </div>
           )}
         </div>
       </div>

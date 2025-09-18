@@ -33,8 +33,8 @@ export const driverSidebarItems: ISidebarItem[] = [
         component: AvailabilityControl,
       },
       {
-        title: "Active Ride",
-        url: "/driver/active-ride",
+        title: "Available Ride",
+        url: "/driver/available-ride",
         component: ActiveRide,
       },
       {

@@ -36,26 +36,21 @@ const AvailabilityControl = ({
   const [locationError, setLocationError] = useState<string | null>(null);
   const [lastStatusChange, setLastStatusChange] = useState<Date | null>(null);
 
-  // Fetch driver profile to get current status
   const { data: driverProfileData, isLoading: isProfileLoading } =
     useGetDriverProfileQuery(undefined);
   const [setOnlineStatus, { isLoading }] = useSetOnlineStatusMutation();
 
   const driverProfile = driverProfileData?.data;
-  // console.log("Driver Profile:", driverProfile);
 
-  // Sync with backend status when driver profile loads
   useEffect(() => {
     if (driverProfile && !isProfileLoading) {
       const backendStatus = driverProfile.onlineStatus === "online";
       setIsOnline(backendStatus);
 
-      // Notify parent component of the actual status
       onStatusChange?.(backendStatus);
     }
   }, [driverProfile, isProfileLoading, onStatusChange]);
 
-  // Get current location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -85,7 +80,7 @@ const AvailabilityControl = ({
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 300000, // 5 minutes
+          maximumAge: 300000,
         }
       );
     } else {
@@ -93,7 +88,6 @@ const AvailabilityControl = ({
     }
   }, []);
 
-  // Watch position when online
   useEffect(() => {
     let watchId: number | null = null;
 
@@ -111,7 +105,7 @@ const AvailabilityControl = ({
         {
           enableHighAccuracy: true,
           timeout: 30000,
-          maximumAge: 60000, // 1 minute
+          maximumAge: 60000,
         }
       );
     }
@@ -129,15 +123,12 @@ const AvailabilityControl = ({
     const newStatus = !isOnline;
     console.log("Toggling status to:", newStatus);
 
-    // Enhanced validation for going online
     if (newStatus) {
-      // Check if we're still getting location
       if (!currentLocation && !locationError) {
         toast("Getting location... Please wait and try again");
         return;
       }
 
-      // Check for location errors
       if (locationError) {
         toast(
           "Location access is required to go online. Please enable location permissions and refresh the page."
@@ -145,7 +136,6 @@ const AvailabilityControl = ({
         return;
       }
 
-      // Final check - ensure we have valid coordinates
       if (
         !currentLocation ||
         typeof currentLocation.lat !== "number" ||
@@ -166,12 +156,9 @@ const AvailabilityControl = ({
         status: newStatus ? "online" : "offline",
       };
 
-      // Only add location when going online (and we've validated it exists)
       if (newStatus && currentLocation) {
         payload.location = currentLocation;
       }
-
-      console.log("Updating status with payload:", payload);
 
       await setOnlineStatus(payload).unwrap();
 
@@ -185,9 +172,7 @@ const AvailabilityControl = ({
           : "You are now offline"
       );
     } catch (error: any) {
-      // Enhanced error handling
       let errorMessage = "Failed to update status";
-
       if (error?.data?.message) {
         errorMessage = error.data.message;
       } else if (error?.message) {
@@ -195,13 +180,9 @@ const AvailabilityControl = ({
       } else if (typeof error === "string") {
         errorMessage = error;
       }
-
-      // Handle specific validation errors
       if (errorMessage.includes("Location is required")) {
-        errorMessage =
-          "Location is required to go online. Please enable GPS and try again.";
+        errorMessage = "Location is required to go online. Please enable GPS and try again.";
       }
-
       toast(errorMessage);
       console.error("Status update error:", error);
     }
@@ -209,20 +190,16 @@ const AvailabilityControl = ({
 
   const formatLastStatusChange = () => {
     if (!lastStatusChange) return null;
-
     const now = new Date();
     const diffInMinutes = Math.floor(
       (now.getTime() - lastStatusChange.getTime()) / (1000 * 60)
     );
-
     if (diffInMinutes < 1) return "Just now";
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-
     const diffInHours = Math.floor(diffInMinutes / 60);
     return `${diffInHours}h ago`;
   };
 
-  // Show loading state while fetching profile
   if (isProfileLoading) {
     return (
       <div className="bg-card rounded-lg border p-6">
@@ -361,7 +338,6 @@ const AvailabilityControl = ({
             </div>
           </button>
 
-          {/* Helper Text */}
           <p className="text-xs text-center text-muted-foreground">
             {isOnline
               ? "You are visible to riders and can receive ride requests"

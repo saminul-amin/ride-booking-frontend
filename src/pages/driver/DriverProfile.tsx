@@ -154,7 +154,7 @@ const DriverProfile = () => {
               <Shield className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Account Status</p>
-                <p className="font-semibold capitalize">{user.status}</p>
+                <p className="font-semibold capitalize">{user.driverStatus}</p>
               </div>
             </div>
           </div>

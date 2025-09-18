@@ -26,6 +26,8 @@ const RiderDashboard = () => {
   const userInfo = userInfoData?.data;
   const rideHistory = rideHistoryData?.data;
 
+  console.log("Ride History:", rideHistory);
+
   const tabs = [
     { id: "overview", label: "Overview", icon: Activity },
     { id: "history", label: "Ride History", icon: Clock },

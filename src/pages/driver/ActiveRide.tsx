@@ -1,17 +1,15 @@
 import { useState } from "react";
 import {
-  Navigation,
-  Phone,
   User,
-  DollarSign,
-  Clock,
   Car,
   CheckCircle,
   XCircle,
+  MapPin,
 } from "lucide-react";
 import {
-  useGetRideHistoryQuery,
+  useGetAvailableRidesQuery,
   useUpdateRideStatusMutation,
+  useAcceptRideMutation,
 } from "@/redux/features/ride/ride.api";
 import { toast } from "sonner";
 
@@ -24,28 +22,43 @@ const RideStatus = {
   CANCELLED: "cancelled",
 } as const;
 
-// type RideStatusType = typeof RideStatus[keyof typeof RideStatus];
-
 const ActiveRide = () => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isAccepting, setIsAccepting] = useState(false);
 
   const {
     data: rideHistoryData,
     isLoading,
     error,
     refetch,
-  } = useGetRideHistoryQuery(undefined);
+  } = useGetAvailableRidesQuery(undefined);
   const [updateRideStatus] = useUpdateRideStatusMutation();
+  const [acceptRide] = useAcceptRideMutation();
 
   const rideHistory = rideHistoryData?.data;
-  console.log(rideHistory);
-
-  // Filter for active ride (not completed or cancelled)
+  
   const activeRide = rideHistory?.find((ride: any) =>
-    [RideStatus.ACCEPTED, RideStatus.PICKED_UP, RideStatus.IN_TRANSIT].includes(
-      ride.status
-    )
+    [RideStatus.REQUESTED].includes(ride.status)
   );
+
+  console.log("Active Ride", activeRide);
+
+  const handleAcceptRide = async () => {
+    if (!activeRide?._id) return;
+
+    setIsAccepting(true);
+    try {
+      await acceptRide(activeRide._id).unwrap();
+
+      toast.success("Ride accepted successfully!");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to accept ride");
+      console.error("Error accepting ride:", error);
+    } finally {
+      setIsAccepting(false);
+    }
+  };
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!activeRide?.id) return;
@@ -69,6 +82,8 @@ const ActiveRide = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case RideStatus.REQUESTED:
+        return "text-orange-600 bg-orange-100 dark:bg-orange-900/30";
       case RideStatus.ACCEPTED:
         return "text-blue-600 bg-blue-100 dark:bg-blue-900/30";
       case RideStatus.PICKED_UP:
@@ -137,10 +152,10 @@ const ActiveRide = () => {
           <div className="bg-card rounded-lg border p-6 text-center">
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">
-              Error Loading Active Ride
+              Error Loading Available Rides
             </h2>
             <p className="text-muted-foreground mb-4">
-              Unable to load your active ride information.
+              Unable to load available ride information.
             </p>
             <button
               onClick={() => refetch()}
@@ -159,13 +174,13 @@ const ActiveRide = () => {
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent mb-6">
-            Active Ride
+            Available Rides
           </h1>
           <div className="bg-card rounded-lg border p-12 text-center">
             <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No Active Ride</h2>
+            <h2 className="text-xl font-semibold mb-2">No Available Rides</h2>
             <p className="text-muted-foreground">
-              You don't have any active rides at the moment.
+              There are no available rides at the moment. Check back later!
             </p>
           </div>
         </div>
@@ -177,13 +192,13 @@ const ActiveRide = () => {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-5xl mx-auto space-y-6">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">
-          Active Ride
+          Available Rides
         </h1>
 
-        {/* Ride Status */}
+        {/* Ride Information */}
         <div className="bg-card rounded-lg border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Ride Status</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold">Ride Request</h2>
             <div
               className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
                 activeRide.status
@@ -193,81 +208,43 @@ const ActiveRide = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <DollarSign className="h-5 w-5 text-green-600" />
+          {/* Rider Information */}
+          {activeRide.rider && (
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 mb-6">
+              <h3 className="text-lg font-semibold mb-3 flex items-center">
+                <User className="h-5 w-5 mr-2" />
+                Rider Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="font-medium">Fare Amount</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    ${activeRide.fare}
-                  </p>
+                  <p className="text-sm text-muted-foreground">Name</p>
+                  <p className="font-medium">{activeRide.rider.name || 'Not provided'}</p>
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Clock className="h-5 w-5 text-blue-600" />
                 <div>
-                  <p className="font-medium">Ride Duration</p>
-                  <p className="text-muted-foreground">
-                    {activeRide.estimatedDuration || "Calculating..."}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Navigation className="h-5 w-5 text-purple-600" />
-                <div>
-                  <p className="font-medium">Distance</p>
-                  <p className="text-muted-foreground">
-                    {activeRide.distance || "Calculating..."}
-                  </p>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="font-medium">{activeRide.rider.phone || 'Not provided'}</p>
                 </div>
               </div>
             </div>
+          )}
 
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <User className="h-5 w-5 text-gray-600" />
-                <div>
-                  <p className="font-medium">Rider</p>
-                  <p className="text-muted-foreground">
-                    {activeRide.rider?.name || "Unknown"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Phone className="h-5 w-5 text-gray-600" />
-                <div>
-                  <p className="font-medium">Contact</p>
-                  <a
-                    href={`tel:${activeRide.rider?.phone}`}
-                    className="text-green-600 hover:text-green-700 transition-colors"
-                  >
-                    {activeRide.rider?.phone || "N/A"}
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Trip Details */}
-        <div className="bg-card rounded-lg border p-6">
-          <h3 className="text-lg font-semibold mb-4">Trip Details</h3>
-          <div className="space-y-4">
+          {/* Trip Details */}
+          <h3 className="text-lg font-semibold mb-4 flex items-center">
+            <MapPin className="h-5 w-5 mr-2" />
+            Trip Details
+          </h3>
+          <div className="space-y-4 mb-6">
             <div className="flex items-start space-x-4">
               <div className="w-4 h-4 bg-blue-500 rounded-full mt-1"></div>
               <div className="flex-1">
                 <p className="font-medium">Pickup Location</p>
                 <p className="text-muted-foreground">
-                  {activeRide.pickupAddress}
+                  {activeRide.pickupLocation?.address}
                 </p>
-                {activeRide.pickupCoordinates && (
+                {activeRide.pickupLocation && (
                   <p className="text-xs text-muted-foreground">
-                    {activeRide.pickupCoordinates.lat},{" "}
-                    {activeRide.pickupCoordinates.lng}
+                    {activeRide.pickupLocation?.latitude},{" "}
+                    {activeRide.pickupLocation?.longitude}
                   </p>
                 )}
               </div>
@@ -278,12 +255,12 @@ const ActiveRide = () => {
               <div className="flex-1">
                 <p className="font-medium">Destination</p>
                 <p className="text-muted-foreground">
-                  {activeRide.destinationAddress}
+                  {activeRide.destinationLocation?.address}
                 </p>
-                {activeRide.destinationCoordinates && (
+                {activeRide.destinationLocation && (
                   <p className="text-xs text-muted-foreground">
-                    {activeRide.destinationCoordinates.lat},{" "}
-                    {activeRide.destinationCoordinates.lng}
+                    {activeRide.destinationLocation?.latitude},{" "}
+                    {activeRide.destinationLocation?.longitude}
                   </p>
                 )}
               </div>
@@ -292,11 +269,37 @@ const ActiveRide = () => {
         </div>
 
         {/* Action Buttons */}
+        {activeRide.status === RideStatus.REQUESTED && (
+          <div className="bg-card rounded-lg border p-6">
+            <h3 className="text-lg font-semibold mb-4">Actions</h3>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={handleAcceptRide}
+                disabled={isAccepting}
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-3 flex-1"
+              >
+                <CheckCircle className="h-6 w-6" />
+                <span>{isAccepting ? "Accepting..." : "Accept Ride"}</span>
+              </button>
+
+              <button
+                onClick={() => handleStatusUpdate(RideStatus.CANCELLED)}
+                disabled={isAccepting}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+              >
+                <XCircle className="h-5 w-5" />
+                <span>Decline</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Status Update Actions for Accepted Rides */}
         {(activeRide.status === RideStatus.ACCEPTED ||
           activeRide.status === RideStatus.PICKED_UP ||
           activeRide.status === RideStatus.IN_TRANSIT) && (
           <div className="bg-card rounded-lg border p-6">
-            <h3 className="text-lg font-semibold mb-4">Actions</h3>
+            <h3 className="text-lg font-semibold mb-4">Update Status</h3>
             <div className="flex flex-col sm:flex-row gap-4">
               {getNextStatus(activeRide.status) && (
                 <button
@@ -322,14 +325,6 @@ const ActiveRide = () => {
                     <span>Cancel Ride</span>
                   </button>
                 )}
-
-              <a
-                href={`tel:${activeRide.rider?.phone}`}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2"
-              >
-                <Phone className="h-5 w-5" />
-                <span>Call Rider</span>
-              </a>
             </div>
           </div>
         )}

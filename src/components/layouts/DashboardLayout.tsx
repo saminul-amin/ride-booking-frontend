@@ -31,9 +31,6 @@ export default function DashboardLayout() {
 
   const userRole = userInfo?.role;
 
-  console.log(userRole);
-  console.log(userInfo);
-
   const handleLogout = async () => {
     try {
       await logout(undefined).unwrap();
@@ -94,7 +91,7 @@ export default function DashboardLayout() {
               <div className="relative">
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors cursor-pointer"
                 >
                   <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                     <User className="h-4 w-4 text-white" />
@@ -106,26 +103,19 @@ export default function DashboardLayout() {
                 </button>
 
                 {profileOpen && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-popover border">
+                  <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-popover border cursor-pointer">
                     <div className="py-1">
                       <Link
                         to={`/${userRole.toLowerCase()}/profile`}
-                        className="block px-4 py-2 text-sm hover:bg-accent transition-colors"
+                        className="block px-4 py-2 text-sm hover:bg-accent transition-colors cursor-pointer"
                         onClick={() => setProfileOpen(false)}
                       >
                         Profile Settings
                       </Link>
-                      <Link
-                        to="/settings"
-                        className="block px-4 py-2 text-sm hover:bg-accent transition-colors"
-                        onClick={() => setProfileOpen(false)}
-                      >
-                        Account Settings
-                      </Link>
                       <hr className="my-1" />
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-destructive hover:bg-accent transition-colors"
+                        className="block w-full text-left px-4 py-2 text-sm text-destructive hover:bg-accent transition-colors cursor-pointer"
                       >
                         Sign Out
                       </button>
