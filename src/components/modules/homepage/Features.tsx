@@ -161,7 +161,6 @@ const Features = () => {
     drivers: { label: "For Drivers", features: driverFeatures },
   };
 
-  // console.log(tabConfig[activeTab].features);
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
       {/* Background Pattern */}
@@ -303,7 +302,6 @@ const Features = () => {
         </div>
       </div>
 
-      {/* Decorative Elements */}
       <div className="absolute bottom-0 right-0 w-32 h-32 bg-green-200 dark:bg-green-800 rounded-full opacity-10 translate-x-16 translate-y-16"></div>
       <div className="absolute top-20 left-0 w-24 h-24 bg-green-300 dark:bg-green-700 rounded-full opacity-15 -translate-x-12"></div>
     </section>

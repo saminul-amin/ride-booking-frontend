@@ -20,8 +20,6 @@ import { getSidebarItems } from "@/utils/getSidebarItems";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: userData } = useUserInfoQuery(undefined);
 
-  // console.log(userData?.data?.role)
-
   const data = {
     navMain: getSidebarItems(userData?.data?.role),
   };
@@ -46,7 +44,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       
       <SidebarContent className="py-4">
-        {/* We create a SidebarGroup for each parent. */}
         {data.navMain.map((item: any) => (
           <SidebarGroup key={item.title} className="mb-2">
             <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 mb-2 hover:text-muted-foreground transition-colors duration-200">
@@ -64,7 +61,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         to={menuItem.url}
                         className="flex items-center space-x-3 text-muted-foreground hover:text-foreground transition-colors duration-200"
                       >
-                        {/* Add dynamic icons based on menu item or use a default */}
                         <div className="w-5 h-5 rounded-sm bg-gradient-to-br from-green-400/20 to-green-600/20 flex items-center justify-center transition-all duration-200 group-hover:from-green-400/40 group-hover:to-green-600/40">
                           <div className="w-2 h-2 rounded-full bg-green-500/60 group-hover:bg-green-500 transition-all duration-200" />
                         </div>
@@ -80,7 +76,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
         
-        {/* Add some bottom spacing */}
         <div className="h-4" />
       </SidebarContent>
       

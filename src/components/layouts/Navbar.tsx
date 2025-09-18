@@ -20,7 +20,6 @@ const Navbar = () => {
   const { data: userInfo, isLoading, isError } = useUserInfoQuery(undefined);
   const [logout] = useLogoutMutation();
 
-  console.log(userInfo);
   const isLoggedIn = !!userInfo && !isError && !loggedOut;
   const userRole = userInfo?.data?.role;
 
@@ -28,12 +27,9 @@ const Navbar = () => {
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
 
   const publicNavItems = [
-    { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
-    { label: "Features", href: "/features" },
-    { label: "Contact", href: "/contact" },
-    { label: "FAQ", href: "/faq" },
-    { label: "How it Works", href: "/how-it-works" },
+    { label: "Home", href: "#home" },
+    { label: "Features", href: "#features" },
+    { label: "How it Works", href: "#how-it-works" },
   ];
 
   const roleBasedNavItems = {
@@ -57,31 +53,43 @@ const Navbar = () => {
     ],
   };
 
-  console.log(isLoggedIn);
   const currentNavItems = isLoggedIn
     ? roleBasedNavItems[userRole as keyof typeof roleBasedNavItems]
     : publicNavItems;
 
-  console.log(isLoggedIn, userRole)
+  const handleNavClick = (href: string, e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (href.startsWith("#")) {
+      const element = document.getElementById(href.slice(1));
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    } else {
+      navigate(href);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await logout(undefined);
       dispatch(authApi.util.resetApiState());
       setLoggedOut(true);
-      toast("Successfully logged out!");
+      toast.success("Successfully logged out!");
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
-  // Add this before your return statement
   if (isLoading) {
     return (
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            {/* Just show logo while loading */}
             <span className="text-xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">
               RideBook
             </span>
@@ -110,6 +118,7 @@ const Navbar = () => {
               <a
                 key={item.label}
                 href={item.href}
+                onClick={(e) => handleNavClick(item.href, e)}
                 className="px-3 py-2 text-sm font-medium transition-all duration-200   cursor-pointer rounded-lg hover:text-green-500"
               >
                 {item.label}
@@ -202,8 +211,11 @@ const Navbar = () => {
               <a
                 key={item.label}
                 href={item.href}
+                onClick={(e) => {
+                  handleNavClick(item.href, e);
+                  setIsOpen(false);
+                }}
                 className="block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200 hover:bg-accent hover:text-primary cursor-pointer hover:pl-6 hover:shadow-md"
-                onClick={() => setIsOpen(false)}
               >
                 {item.label}
               </a>

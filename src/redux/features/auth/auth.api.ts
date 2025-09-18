@@ -18,7 +18,6 @@ export const authApi = baseApi.injectEndpoints({
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
-          // Clear all user-related cache
           dispatch(authApi.util.resetApiState());
         } catch (error) {
           console.error("Logout error:", error);

@@ -1,7 +1,6 @@
 import type { ISidebarItem } from "@/types";
 import { lazy } from "react";
 
-// Lazy load driver components
 const DriverDashboard = lazy(() => import("@/pages/driver/DriverDashboard"));
 const AvailabilityControl = lazy(
   () => import("@/pages/driver/AvailabilityControl")

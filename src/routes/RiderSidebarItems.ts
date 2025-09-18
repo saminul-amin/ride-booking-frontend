@@ -1,7 +1,6 @@
 import type { ISidebarItem } from "@/types";
 import { lazy } from "react";
 
-// Lazy load rider components
 const RiderDashboard = lazy(() => import("@/pages/rider/RiderDashboard"));
 const BookRide = lazy(() => import("@/pages/rider/BookRide"));
 const RideHistory = lazy(() => import("@/pages/rider/RideHistory"));

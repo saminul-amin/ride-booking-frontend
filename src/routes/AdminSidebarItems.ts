@@ -1,7 +1,6 @@
 import type { ISidebarItem } from "@/types";
 import { lazy } from "react";
 
-// Lazy load admin components
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const UserManagement = lazy(() => import("@/pages/admin/UserManagement"));
 const RiderManagement = lazy(() => import("@/pages/admin/RiderManagement"));

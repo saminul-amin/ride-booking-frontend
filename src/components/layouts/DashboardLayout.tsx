@@ -28,7 +28,6 @@ export default function DashboardLayout() {
   const [logout] = useLogoutMutation();
 
   const userInfo = userInfoData?.data;
-
   const userRole = userInfo?.role;
 
   const handleLogout = async () => {

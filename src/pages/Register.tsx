@@ -150,7 +150,6 @@ const Register = () => {
 
     try {
       await registerUser(userInfo).unwrap();
-      // console.log("Registration successful:", data);
       toast.success("Account created successfully! Please login to continue.");
       navigate("/login");
     } catch (error) {

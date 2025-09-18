@@ -163,10 +163,6 @@ const HowItWorks = () => {
 
   const currentConfig = processConfig[activeProcess];
 
-  // console.log(Object.entries(processConfig));
-  // console.log(currentConfig.steps);
-  // console.log(benefits);
-
   return (
     <section className="py-20 bg-white dark:bg-gray-900 relative overflow-hidden">
       {/* Background Elements */}

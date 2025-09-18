@@ -5,9 +5,15 @@ import HowItWorks from "@/components/modules/homepage/HowItWorks";
 export default function Homepage() {
   return (
     <div>
-      <Hero />
-      <Features />
-      <HowItWorks />
+      <section id="home">
+        <Hero />
+      </section>
+      <section id="features">
+        <Features />
+      </section>
+      <section id="how-it-works">
+        <HowItWorks />
+      </section>
     </div>
   );
 }
