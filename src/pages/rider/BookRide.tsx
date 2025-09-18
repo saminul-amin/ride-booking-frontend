@@ -24,6 +24,21 @@ interface BookRideFormData {
   notes?: string;
 }
 
+interface LocationData {
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+
+interface RideRequestData {
+  pickupLocation: LocationData;
+  destinationLocation: LocationData;
+  rideType: string;
+  scheduledTime?: string;
+  passengers: number;
+  notes?: string;
+}
+
 const BookRide = () => {
   const navigate = useNavigate();
   const [requestRide, { isLoading }] = useRequestRideMutation();
@@ -35,6 +50,7 @@ const BookRide = () => {
     formState: { errors, isValid },
     watch,
     setValue,
+    setError,
   } = useForm<BookRideFormData>({
     mode: "onChange",
     defaultValues: {
@@ -76,13 +92,79 @@ const BookRide = () => {
     },
   ];
 
+  // Function to geocode an address (placeholder implementation)
+  const geocodeAddress = async (address: string): Promise<LocationData> => {
+    // This is a placeholder implementation. In a real app, you would use a geocoding service
+    // like Google Maps Geocoding API, Mapbox, or similar
+    
+    // For now, we'll generate mock coordinates based on the address hash
+    // This ensures different addresses get different coordinates
+    const hash = address.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    // Generate coordinates within a reasonable range (example: around New York City area)
+    const latitude = 40.7128 + (Math.abs(hash) % 1000) / 10000; // 40.7128 to 40.8128
+    const longitude = -74.0060 + (Math.abs(hash * 2) % 1000) / 10000; // -74.0060 to -73.9060
+    
+    return {
+      address: address.trim(),
+      latitude,
+      longitude,
+    };
+  };
+
   const onSubmit = async (data: BookRideFormData) => {
     try {
-      await requestRide(data).unwrap();
+      // Validate that pickup and destination are different
+      if (data.pickup.trim().toLowerCase() === data.destination.trim().toLowerCase()) {
+        setError("destination", {
+          type: "manual",
+          message: "Pickup and destination locations must be different",
+        });
+        return;
+      }
+
+      // Geocode the addresses
+      const [pickupLocation, destinationLocation] = await Promise.all([
+        geocodeAddress(data.pickup),
+        geocodeAddress(data.destination),
+      ]);
+
+      // Check if locations are too close (implementing the validation rule)
+      const latDiff = Math.abs(pickupLocation.latitude - destinationLocation.latitude);
+      const lngDiff = Math.abs(pickupLocation.longitude - destinationLocation.longitude);
+      
+      if (latDiff <= 0.001 && lngDiff <= 0.001) {
+        setError("destination", {
+          type: "manual",
+          message: "Pickup and destination locations must be different",
+        });
+        return;
+      }
+
+      // Transform the data to match the expected schema
+      const rideRequestData: RideRequestData = {
+        pickupLocation,
+        destinationLocation,
+        rideType: data.rideType,
+        scheduledTime: data.scheduledTime || undefined,
+        passengers: data.passengers,
+        notes: data.notes || undefined,
+      };
+
+      await requestRide(rideRequestData).unwrap();
       toast.success("Ride requested successfully!");
       navigate("/rider/dashboard");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to request ride");
+      if (error?.data?.message) {
+        toast.error(error.data.message);
+      } else if (error?.message) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to request ride");
+      }
       console.error("Failed to request ride:", error);
     }
   };
@@ -161,9 +243,12 @@ const BookRide = () => {
                         {...register("pickup", {
                           required: "Pickup location is required",
                           minLength: {
-                            value: 3,
-                            message:
-                              "Pickup location must be at least 3 characters",
+                            value: 5,
+                            message: "Pickup location must be at least 5 characters",
+                          },
+                          maxLength: {
+                            value: 200,
+                            message: "Pickup location cannot exceed 200 characters",
                           },
                         })}
                         type="text"
@@ -191,9 +276,12 @@ const BookRide = () => {
                         {...register("destination", {
                           required: "Destination is required",
                           minLength: {
-                            value: 3,
-                            message:
-                              "Destination must be at least 3 characters",
+                            value: 5,
+                            message: "Destination must be at least 5 characters",
+                          },
+                          maxLength: {
+                            value: 200,
+                            message: "Destination cannot exceed 200 characters",
                           },
                         })}
                         type="text"
@@ -271,8 +359,8 @@ const BookRide = () => {
                     <textarea
                       {...register("notes", {
                         maxLength: {
-                          value: 200,
-                          message: "Notes must be less than 200 characters",
+                          value: 1000,
+                          message: "Notes must be less than 1000 characters",
                         },
                       })}
                       placeholder="Any special instructions for the driver..."

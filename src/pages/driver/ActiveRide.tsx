@@ -29,12 +29,22 @@ const RideStatus = {
 const ActiveRide = () => {
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const { data: rideHistory, isLoading, error, refetch } = useGetRideHistoryQuery(undefined);
+  const {
+    data: rideHistoryData,
+    isLoading,
+    error,
+    refetch,
+  } = useGetRideHistoryQuery(undefined);
   const [updateRideStatus] = useUpdateRideStatusMutation();
 
+  const rideHistory = rideHistoryData?.data;
+  console.log(rideHistory);
+
   // Filter for active ride (not completed or cancelled)
-  const activeRide = rideHistory?.data?.find((ride: any) => 
-    [RideStatus.ACCEPTED, RideStatus.PICKED_UP, RideStatus.IN_TRANSIT].includes(ride.status)
+  const activeRide = rideHistory?.find((ride: any) =>
+    [RideStatus.ACCEPTED, RideStatus.PICKED_UP, RideStatus.IN_TRANSIT].includes(
+      ride.status
+    )
   );
 
   const handleStatusUpdate = async (newStatus: string) => {
@@ -46,8 +56,8 @@ const ActiveRide = () => {
         id: activeRide.id,
         statusData: { status: newStatus },
       }).unwrap();
-      
-      toast.success(`Ride status updated to ${newStatus.replace('_', ' ')}`);
+
+      toast.success(`Ride status updated to ${newStatus.replace("_", " ")}`);
       refetch();
     } catch (error) {
       toast.error("Failed to update ride status");
@@ -126,11 +136,13 @@ const ActiveRide = () => {
         <div className="max-w-4xl mx-auto">
           <div className="bg-card rounded-lg border p-6 text-center">
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Error Loading Active Ride</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Error Loading Active Ride
+            </h2>
             <p className="text-muted-foreground mb-4">
               Unable to load your active ride information.
             </p>
-            <button 
+            <button
               onClick={() => refetch()}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
             >
@@ -172,34 +184,44 @@ const ActiveRide = () => {
         <div className="bg-card rounded-lg border p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Ride Status</h2>
-            <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(activeRide.status)}`}>
-              {activeRide.status.replace('_', ' ').toUpperCase()}
+            <div
+              className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                activeRide.status
+              )}`}
+            >
+              {activeRide.status.replace("_", " ").toUpperCase()}
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <DollarSign className="h-5 w-5 text-green-600" />
                 <div>
                   <p className="font-medium">Fare Amount</p>
-                  <p className="text-2xl font-bold text-green-600">${activeRide.fare}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    ${activeRide.fare}
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <Clock className="h-5 w-5 text-blue-600" />
                 <div>
                   <p className="font-medium">Ride Duration</p>
-                  <p className="text-muted-foreground">{activeRide.estimatedDuration || 'Calculating...'}</p>
+                  <p className="text-muted-foreground">
+                    {activeRide.estimatedDuration || "Calculating..."}
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <Navigation className="h-5 w-5 text-purple-600" />
                 <div>
                   <p className="font-medium">Distance</p>
-                  <p className="text-muted-foreground">{activeRide.distance || 'Calculating...'}</p>
+                  <p className="text-muted-foreground">
+                    {activeRide.distance || "Calculating..."}
+                  </p>
                 </div>
               </div>
             </div>
@@ -209,19 +231,21 @@ const ActiveRide = () => {
                 <User className="h-5 w-5 text-gray-600" />
                 <div>
                   <p className="font-medium">Rider</p>
-                  <p className="text-muted-foreground">{activeRide.rider?.name || 'Unknown'}</p>
+                  <p className="text-muted-foreground">
+                    {activeRide.rider?.name || "Unknown"}
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-gray-600" />
                 <div>
                   <p className="font-medium">Contact</p>
-                  <a 
+                  <a
                     href={`tel:${activeRide.rider?.phone}`}
                     className="text-green-600 hover:text-green-700 transition-colors"
                   >
-                    {activeRide.rider?.phone || 'N/A'}
+                    {activeRide.rider?.phone || "N/A"}
                   </a>
                 </div>
               </div>
@@ -237,23 +261,29 @@ const ActiveRide = () => {
               <div className="w-4 h-4 bg-blue-500 rounded-full mt-1"></div>
               <div className="flex-1">
                 <p className="font-medium">Pickup Location</p>
-                <p className="text-muted-foreground">{activeRide.pickupAddress}</p>
+                <p className="text-muted-foreground">
+                  {activeRide.pickupAddress}
+                </p>
                 {activeRide.pickupCoordinates && (
                   <p className="text-xs text-muted-foreground">
-                    {activeRide.pickupCoordinates.lat}, {activeRide.pickupCoordinates.lng}
+                    {activeRide.pickupCoordinates.lat},{" "}
+                    {activeRide.pickupCoordinates.lng}
                   </p>
                 )}
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-4">
               <div className="w-4 h-4 bg-green-500 rounded-full mt-1"></div>
               <div className="flex-1">
                 <p className="font-medium">Destination</p>
-                <p className="text-muted-foreground">{activeRide.destinationAddress}</p>
+                <p className="text-muted-foreground">
+                  {activeRide.destinationAddress}
+                </p>
                 {activeRide.destinationCoordinates && (
                   <p className="text-xs text-muted-foreground">
-                    {activeRide.destinationCoordinates.lat}, {activeRide.destinationCoordinates.lng}
+                    {activeRide.destinationCoordinates.lat},{" "}
+                    {activeRide.destinationCoordinates.lng}
                   </p>
                 )}
               </div>
@@ -262,15 +292,17 @@ const ActiveRide = () => {
         </div>
 
         {/* Action Buttons */}
-        {(activeRide.status === RideStatus.ACCEPTED || 
-          activeRide.status === RideStatus.PICKED_UP || 
+        {(activeRide.status === RideStatus.ACCEPTED ||
+          activeRide.status === RideStatus.PICKED_UP ||
           activeRide.status === RideStatus.IN_TRANSIT) && (
           <div className="bg-card rounded-lg border p-6">
             <h3 className="text-lg font-semibold mb-4">Actions</h3>
             <div className="flex flex-col sm:flex-row gap-4">
               {getNextStatus(activeRide.status) && (
                 <button
-                  onClick={() => handleStatusUpdate(getNextStatus(activeRide.status)!)}
+                  onClick={() =>
+                    handleStatusUpdate(getNextStatus(activeRide.status)!)
+                  }
                   disabled={isUpdating}
                   className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
                 >
@@ -278,19 +310,19 @@ const ActiveRide = () => {
                   <span>{getNextStatusLabel(activeRide.status)}</span>
                 </button>
               )}
-              
-              {activeRide.status !== RideStatus.COMPLETED && 
-               activeRide.status !== RideStatus.CANCELLED && (
-                <button
-                  onClick={() => handleStatusUpdate(RideStatus.CANCELLED)}
-                  disabled={isUpdating}
-                  className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
-                >
-                  <XCircle className="h-5 w-5" />
-                  <span>Cancel Ride</span>
-                </button>
-              )}
-              
+
+              {activeRide.status !== RideStatus.COMPLETED &&
+                activeRide.status !== RideStatus.CANCELLED && (
+                  <button
+                    onClick={() => handleStatusUpdate(RideStatus.CANCELLED)}
+                    disabled={isUpdating}
+                    className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+                  >
+                    <XCircle className="h-5 w-5" />
+                    <span>Cancel Ride</span>
+                  </button>
+                )}
+
               <a
                 href={`tel:${activeRide.rider?.phone}`}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2"
@@ -303,24 +335,30 @@ const ActiveRide = () => {
         )}
 
         {/* Completion Message */}
-        {(activeRide.status === RideStatus.COMPLETED || activeRide.status === RideStatus.CANCELLED) && (
+        {(activeRide.status === RideStatus.COMPLETED ||
+          activeRide.status === RideStatus.CANCELLED) && (
           <div className="bg-card rounded-lg border p-6">
             <div className="text-center">
               {activeRide.status === RideStatus.COMPLETED ? (
                 <>
                   <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-green-600">Ride Completed!</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-green-600">
+                    Ride Completed!
+                  </h3>
                   <p className="text-muted-foreground mb-4">
                     Thank you for completing this ride successfully.
                   </p>
                   <p className="text-lg font-semibold">
-                    Earnings: <span className="text-green-600">${activeRide.fare}</span>
+                    Earnings:{" "}
+                    <span className="text-green-600">${activeRide.fare}</span>
                   </p>
                 </>
               ) : (
                 <>
                   <XCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-red-600">Ride Cancelled</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-red-600">
+                    Ride Cancelled
+                  </h3>
                   <p className="text-muted-foreground">
                     This ride has been cancelled.
                   </p>

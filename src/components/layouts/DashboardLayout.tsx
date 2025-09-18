@@ -24,10 +24,15 @@ export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { data: userInfo, isLoading } = useUserInfoQuery(undefined);
+  const { data: userInfoData, isLoading } = useUserInfoQuery(undefined);
   const [logout] = useLogoutMutation();
 
-  const userRole = userInfo?.data?.role;
+  const userInfo = userInfoData?.data;
+
+  const userRole = userInfo?.role;
+
+  console.log(userRole);
+  console.log(userInfo);
 
   const handleLogout = async () => {
     try {

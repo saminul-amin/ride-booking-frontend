@@ -22,6 +22,7 @@ import {
 } from "@/redux/features/driver/driver.api";
 import { useGetAvailableRidesQuery } from "@/redux/features/ride/ride.api";
 import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(false);
@@ -29,14 +30,23 @@ const DriverDashboard = () => {
     lat: number;
     lng: number;
   } | null>(null);
+  const navigate = useNavigate();
 
-  const { data: dashboardData, isLoading: dashboardLoading } =
+  const { data: dashboardDataData, isLoading: dashboardLoading } =
     useGetDriverDashboardQuery(undefined);
-  const { data: statsData, isLoading: statsLoading } = 
+  const { data: statsDataData, isLoading: statsLoading } = 
     useGetDriverStatsQuery(undefined);
-  const { data: availableRides } = useGetAvailableRidesQuery(undefined);
+  const { data: availableRidesData } = useGetAvailableRidesQuery(undefined);
   const [setOnlineStatus] = useSetOnlineStatusMutation();
   const [updateLocation] = useUpdateLocationMutation();
+
+  const dashboardData = dashboardDataData?.data || {};
+  const statsData = statsDataData?.data || {};
+  const availableRides = availableRidesData?.data || [];
+
+  console.log("Dashboard Data:", dashboardData);
+  console.log("Stats Data:", statsData);
+  console.log("Available Rides:", availableRides);
 
   // Get current location
   useEffect(() => {
@@ -132,7 +142,7 @@ const DriverDashboard = () => {
               </div>
             </div>
             <button
-              onClick={handleToggleOnlineStatus}
+              onClick={() => navigate("/driver/availability")}
               className={`px-4 py-2 rounded-lg font-medium ${
                 isOnline
                   ? "bg-red-500 hover:bg-red-600 text-white"
