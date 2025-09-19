@@ -8,6 +8,9 @@ import { createBrowserRouter } from "react-router";
 import { riderSidebarItems } from "./RiderSidebarItems";
 import { driverSidebarItems } from "./DriverSidebarItems";
 import { adminSidebarItems } from "./AdminSidebarItems";
+import Faq from "@/pages/Faq";
+import AboutUs from "@/pages/AboutUs";
+import ContactUs from "@/pages/ContactUs";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +21,18 @@ export const router = createBrowserRouter([
         Component: Homepage,
         path: "",
         index: true,
+      },
+      {
+        Component: Faq,
+        path: "faq",
+      },
+      {
+        Component: AboutUs,
+        path: "about-us",
+      },
+      {
+        Component: ContactUs,
+        path: "contact-us",
       },
     ],
   },

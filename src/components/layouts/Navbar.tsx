@@ -27,9 +27,11 @@ const Navbar = () => {
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
 
   const publicNavItems = [
-    { label: "Home", href: "#home" },
+    { label: "Home", href: "/" },
+    { label: "About Us", href: "/about-us" },
     { label: "Features", href: "#features" },
-    { label: "How it Works", href: "#how-it-works" },
+    { label: "Contact Us", href: "/contact-us" },
+    { label: "FAQ", href: "/faq" },
   ];
 
   const roleBasedNavItems = {
